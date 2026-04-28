@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebCraft — Sites Web pour Entreprises</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --fg: #f0ece3;
+    --accent: #e8ff47;
+    --muted: #3a3a3a;
+    --card: #131313;
+  }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+background: var(–bg);
+color: var(–fg);
+font-family: ‘DM Sans’, sans-serif;
+font-weight: 300;
+overflow-x: hidden;
+cursor: none;
+}
+
+/* Custom cursor */
+.cursor {
+width: 12px; height: 12px;
+background: var(–accent);
+border-radius: 50%;
+position: fixed;
+pointer-events: none;
+z-index: 9999;
+transform: translate(-50%, -50%);
+transition: transform 0.1s, width 0.2s, height 0.2s;
+}
+.cursor-ring {
+width: 36px; height: 36px;
+border: 1px solid var(–accent);
+border-radius: 50%;
+position: fixed;
+pointer-events: none;
+z-index: 9998;
+transform: translate(-50%, -50%);
+transition: transform 0.15s ease, width 0.2s, height 0.2s, opacity 0.2s;
+opacity: 0.5;
+}
+
+/* NAV */
+nav {
+position: fixed; top: 0; left: 0; right: 0;
+z-index: 100;
+display: flex; align-items: center; justify-content: space-between;
+padding: 1.5rem 4rem;
+mix-blend-mode: difference;
+}
+.logo {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 1.6rem;
+letter-spacing: 0.1em;
+color: var(–fg);
+}
+.logo span { color: var(–accent); }
+nav a {
+color: var(–fg);
+text-decoration: none;
+font-size: 0.85rem;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+transition: opacity 0.2s;
+}
+nav a:hover { opacity: 0.5; }
+.nav-links { display: flex; gap: 2.5rem; }
+
+/* HERO */
+.hero {
+min-height: 100vh;
+display: flex; flex-direction: column; justify-content: flex-end;
+padding: 0 4rem 5rem;
+position: relative;
+overflow: hidden;
+}
+.hero-bg {
+position: absolute; inset: 0;
+background:
+radial-gradient(ellipse 60% 50% at 70% 40%, rgba(232,255,71,0.08) 0%, transparent 70%),
+radial-gradient(ellipse 40% 40% at 20% 70%, rgba(232,255,71,0.04) 0%, transparent 60%);
+}
+.hero-grid {
+position: absolute; inset: 0;
+background-image:
+linear-gradient(rgba(240,236,227,0.03) 1px, transparent 1px),
+linear-gradient(90deg, rgba(240,236,227,0.03) 1px, transparent 1px);
+background-size: 60px 60px;
+}
+.hero-label {
+font-size: 0.75rem;
+letter-spacing: 0.2em;
+text-transform: uppercase;
+color: var(–accent);
+margin-bottom: 1.5rem;
+position: relative;
+display: flex; align-items: center; gap: 1rem;
+}
+.hero-label::before {
+content: ‘’;
+width: 40px; height: 1px;
+background: var(–accent);
+}
+.hero-title {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: clamp(4rem, 12vw, 11rem);
+line-height: 0.9;
+letter-spacing: -0.02em;
+position: relative;
+z-index: 1;
+}
+.hero-title .line2 { color: var(–accent); }
+.hero-sub {
+position: absolute;
+right: 4rem; bottom: 5rem;
+max-width: 280px;
+font-size: 0.95rem;
+line-height: 1.7;
+color: rgba(240,236,227,0.6);
+text-align: right;
+}
+.hero-cta {
+margin-top: 3rem;
+display: inline-flex; align-items: center; gap: 1rem;
+background: var(–accent);
+color: var(–bg);
+padding: 1rem 2rem;
+font-family: ‘DM Sans’, sans-serif;
+font-weight: 500;
+font-size: 0.9rem;
+letter-spacing: 0.05em;
+text-transform: uppercase;
+text-decoration: none;
+transition: transform 0.2s, box-shadow 0.2s;
+cursor: none;
+}
+.hero-cta:hover {
+transform: translate(-3px, -3px);
+box-shadow: 6px 6px 0 rgba(232,255,71,0.3);
+}
+.hero-cta svg { transition: transform 0.2s; }
+.hero-cta:hover svg { transform: translateX(4px); }
+
+.scroll-hint {
+position: absolute;
+bottom: 2rem; left: 50%; transform: translateX(-50%);
+display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+opacity: 0.4;
+animation: bounce 2s infinite;
+}
+@keyframes bounce {
+0%, 100% { transform: translateX(-50%) translateY(0); }
+50% { transform: translateX(-50%) translateY(6px); }
+}
+
+/* MARQUEE */
+.marquee-wrap {
+border-top: 1px solid var(–muted);
+border-bottom: 1px solid var(–muted);
+padding: 1rem 0;
+overflow: hidden;
+background: var(–card);
+}
+.marquee-track {
+display: flex;
+gap: 3rem;
+animation: marquee 20s linear infinite;
+white-space: nowrap;
+}
+.marquee-track span {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 1.1rem;
+letter-spacing: 0.1em;
+opacity: 0.4;
+}
+.marquee-track .dot {
+color: var(–accent);
+opacity: 1;
+}
+@keyframes marquee {
+from { transform: translateX(0); }
+to { transform: translateX(-50%); }
+}
+
+/* SERVICES */
+.section { padding: 7rem 4rem; }
+.section-label {
+font-size: 0.72rem;
+letter-spacing: 0.2em;
+text-transform: uppercase;
+color: var(–accent);
+margin-bottom: 4rem;
+display: flex; align-items: center; gap: 1rem;
+}
+.section-label::after {
+content: ‘’;
+flex: 1;
+height: 1px;
+background: var(–muted);
+}
+.services-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 1px;
+background: var(–muted);
+border: 1px solid var(–muted);
+}
+.service-card {
+background: var(–card);
+padding: 2.5rem;
+transition: background 0.3s;
+position: relative;
+overflow: hidden;
+}
+.service-card::before {
+content: ‘’;
+position: absolute;
+inset: 0;
+background: linear-gradient(135deg, rgba(232,255,71,0.05), transparent);
+opacity: 0;
+transition: opacity 0.3s;
+}
+.service-card:hover { background: #1a1a1a; }
+.service-card:hover::before { opacity: 1; }
+.service-num {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 3.5rem;
+color: var(–muted);
+line-height: 1;
+margin-bottom: 1.5rem;
+transition: color 0.3s;
+}
+.service-card:hover .service-num { color: var(–accent); }
+.service-title {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 1.5rem;
+letter-spacing: 0.05em;
+margin-bottom: 1rem;
+}
+.service-desc {
+font-size: 0.88rem;
+line-height: 1.7;
+color: rgba(240,236,227,0.55);
+}
+
+/* PRICING */
+.pricing-section { padding: 7rem 4rem; background: var(–card); }
+.pricing-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 1.5rem;
+margin-top: 3rem;
+}
+.price-card {
+border: 1px solid var(–muted);
+padding: 2.5rem;
+position: relative;
+transition: border-color 0.3s, transform 0.3s;
+}
+.price-card:hover {
+border-color: var(–accent);
+transform: translateY(-6px);
+}
+.price-card.featured {
+border-color: var(–accent);
+background: linear-gradient(135deg, rgba(232,255,71,0.05), transparent);
+}
+.featured-badge {
+position: absolute;
+top: -1px; right: 2rem;
+background: var(–accent);
+color: var(–bg);
+font-size: 0.65rem;
+font-weight: 500;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+padding: 0.3rem 0.8rem;
+}
+.price-name {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 1.2rem;
+letter-spacing: 0.1em;
+color: rgba(240,236,227,0.5);
+margin-bottom: 1.5rem;
+}
+.price-amount {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 4rem;
+line-height: 1;
+margin-bottom: 0.3rem;
+}
+.price-amount span { font-size: 1.5rem; vertical-align: super; }
+.price-note {
+font-size: 0.78rem;
+color: rgba(240,236,227,0.4);
+margin-bottom: 2rem;
+}
+.price-features {
+list-style: none;
+display: flex; flex-direction: column; gap: 0.8rem;
+margin-bottom: 2.5rem;
+}
+.price-features li {
+font-size: 0.88rem;
+color: rgba(240,236,227,0.7);
+display: flex; align-items: center; gap: 0.7rem;
+}
+.price-features li::before {
+content: ‘→’;
+color: var(–accent);
+font-size: 0.8rem;
+}
+.btn {
+display: block; width: 100%;
+padding: 0.9rem;
+text-align: center;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.85rem;
+font-weight: 500;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+text-decoration: none;
+border: 1px solid var(–fg);
+color: var(–fg);
+background: transparent;
+cursor: none;
+transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.btn:hover, .btn.primary {
+background: var(–accent);
+color: var(–bg);
+border-color: var(–accent);
+}
+.btn.primary:hover { opacity: 0.85; }
+
+/* CONTACT */
+.contact-section {
+padding: 7rem 4rem;
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 5rem;
+align-items: start;
+}
+.contact-title {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: clamp(2.5rem, 6vw, 5rem);
+line-height: 0.95;
+margin-bottom: 1.5rem;
+}
+.contact-title em { color: var(–accent); font-style: normal; }
+.contact-text {
+font-size: 0.9rem;
+line-height: 1.8;
+color: rgba(240,236,227,0.55);
+margin-bottom: 2rem;
+}
+.contact-info { display: flex; flex-direction: column; gap: 1rem; }
+.info-row {
+display: flex; align-items: center; gap: 1rem;
+font-size: 0.88rem; color: rgba(240,236,227,0.6);
+}
+.info-row strong { color: var(–fg); font-weight: 500; }
+
+.form { display: flex; flex-direction: column; gap: 1rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.field {
+display: flex; flex-direction: column; gap: 0.4rem;
+}
+.field label {
+font-size: 0.7rem;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+color: rgba(240,236,227,0.4);
+}
+.field input, .field select, .field textarea {
+background: var(–card);
+border: 1px solid var(–muted);
+color: var(–fg);
+padding: 0.9rem 1rem;
+font-family: ‘DM Sans’, sans-serif;
+font-size: 0.88rem;
+outline: none;
+transition: border-color 0.2s;
+cursor: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+border-color: var(–accent);
+}
+.field textarea { resize: none; min-height: 110px; }
+.field select { appearance: none; }
+.field select option { background: #1a1a1a; }
+.submit-btn {
+background: var(–accent);
+color: var(–bg);
+border: none;
+padding: 1.1rem 2rem;
+font-family: ‘DM Sans’, sans-serif;
+font-weight: 500;
+font-size: 0.9rem;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+cursor: none;
+transition: opacity 0.2s, transform 0.2s;
+display: flex; align-items: center; justify-content: center; gap: 0.7rem;
+}
+.submit-btn:hover { opacity: 0.85; transform: translateY(-2px); }
+
+/* FOOTER */
+footer {
+border-top: 1px solid var(–muted);
+padding: 2rem 4rem;
+display: flex; align-items: center; justify-content: space-between;
+}
+footer p { font-size: 0.78rem; color: rgba(240,236,227,0.3); }
+.footer-logo {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 1.2rem;
+letter-spacing: 0.1em;
+}
+.footer-logo span { color: var(–accent); }
+
+/* SUCCESS MESSAGE */
+.success-msg {
+display: none;
+background: rgba(232,255,71,0.1);
+border: 1px solid var(–accent);
+padding: 1rem 1.5rem;
+font-size: 0.88rem;
+color: var(–accent);
+margin-top: 1rem;
+}
+
+/* ANIMATIONS */
+.fade-up {
+opacity: 0;
+transform: translateY(30px);
+transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-up.visible {
+opacity: 1;
+transform: translateY(0);
+}
+
+@media (max-width: 900px) {
+nav { padding: 1.2rem 2rem; }
+.nav-links { display: none; }
+.hero { padding: 0 2rem 4rem; }
+.hero-sub { display: none; }
+.section, .pricing-section { padding: 4rem 2rem; }
+.services-grid, .pricing-grid { grid-template-columns: 1fr; }
+.contact-section { grid-template-columns: 1fr; padding: 4rem 2rem; gap: 3rem; }
+.form-row { grid-template-columns: 1fr; }
+footer { flex-direction: column; gap: 1rem; text-align: center; }
+}
+</style>
+
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+
+<nav>
+  <div class="logo">Web<span>Craft</span></div>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#tarifs">Tarifs</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-label">Agence Web Freelance</div>
+  <h1 class="hero-title">
+    Votre site<br>
+    <span class="line2">pro en ligne</span><br>
+    rapidement.
+  </h1>
+  <a href="#contact" class="hero-cta">
+    Demander un devis
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+  <div class="hero-sub">
+    Je crée des sites web modernes et efficaces pour les petites entreprises qui veulent se démarquer en ligne.
+  </div>
+  <div class="scroll-hint">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 3v10M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    Défiler
+  </div>
+</section>
+
+<!-- MARQUEE -->
+
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span>Sites Vitrines</span><span class="dot">✦</span>
+    <span>E-Commerce</span><span class="dot">✦</span>
+    <span>Restaurants</span><span class="dot">✦</span>
+    <span>Artisans</span><span class="dot">✦</span>
+    <span>Coiffeurs</span><span class="dot">✦</span>
+    <span>Médecins</span><span class="dot">✦</span>
+    <span>Boutiques</span><span class="dot">✦</span>
+    <span>Agences</span><span class="dot">✦</span>
+    <span>Sites Vitrines</span><span class="dot">✦</span>
+    <span>E-Commerce</span><span class="dot">✦</span>
+    <span>Restaurants</span><span class="dot">✦</span>
+    <span>Artisans</span><span class="dot">✦</span>
+    <span>Coiffeurs</span><span class="dot">✦</span>
+    <span>Médecins</span><span class="dot">✦</span>
+    <span>Boutiques</span><span class="dot">✦</span>
+    <span>Agences</span><span class="dot">✦</span>
+  </div>
+</div>
+
+<!-- SERVICES -->
+
+<section class="section" id="services">
+  <div class="section-label">Ce que je fais</div>
+  <div class="services-grid">
+    <div class="service-card fade-up">
+      <div class="service-num">01</div>
+      <div class="service-title">Site Vitrine</div>
+      <p class="service-desc">Un site élégant pour présenter votre activité, vos services et vos coordonnées. Parfait pour les artisans, professions libérales et PME.</p>
+    </div>
+    <div class="service-card fade-up">
+      <div class="service-num">02</div>
+      <div class="service-title">Boutique en Ligne</div>
+      <p class="service-desc">Vendez vos produits 24h/24. Paiement sécurisé, gestion des stocks, tableau de bord simple à utiliser.</p>
+    </div>
+    <div class="service-card fade-up">
+      <div class="service-num">03</div>
+      <div class="service-title">Référencement SEO</div>
+      <p class="service-desc">Apparaître sur Google quand vos clients cherchent vos services. Optimisation technique et contenu ciblé.</p>
+    </div>
+    <div class="service-card fade-up">
+      <div class="service-num">04</div>
+      <div class="service-title">Refonte de Site</div>
+      <p class="service-desc">Votre site est vieux ou ne convertit pas ? Je le modernise avec un design actuel et une meilleure expérience utilisateur.</p>
+    </div>
+    <div class="service-card fade-up">
+      <div class="service-num">05</div>
+      <div class="service-title">Maintenance</div>
+      <p class="service-desc">Mises à jour, sauvegardes, sécurité et modifications de contenu. Votre site toujours opérationnel.</p>
+    </div>
+    <div class="service-card fade-up">
+      <div class="service-num">06</div>
+      <div class="service-title">Livraison Rapide</div>
+      <p class="service-desc">Site livré en 5 à 10 jours. Processus clair, communication directe, aucune mauvaise surprise.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+
+<section class="pricing-section" id="tarifs">
+  <div class="section-label">Tarifs</div>
+  <div class="pricing-grid">
+    <div class="price-card fade-up">
+      <div class="price-name">Starter</div>
+      <div class="price-amount"><span>€</span>299</div>
+      <div class="price-note">Paiement unique</div>
+      <ul class="price-features">
+        <li>Site vitrine 3 pages</li>
+        <li>Design responsive mobile</li>
+        <li>Formulaire de contact</li>
+        <li>Mise en ligne incluse</li>
+        <li>1 mois de support</li>
+      </ul>
+      <a href="#contact" class="btn">Commencer</a>
+    </div>
+    <div class="price-card featured fade-up">
+      <div class="featured-badge">Populaire</div>
+      <div class="price-name">Business</div>
+      <div class="price-amount"><span>€</span>599</div>
+      <div class="price-note">Paiement unique</div>
+      <ul class="price-features">
+        <li>Site vitrine 6 pages</li>
+        <li>Design sur-mesure</li>
+        <li>Optimisation SEO</li>
+        <li>Google Maps intégré</li>
+        <li>Blog / actualités</li>
+        <li>3 mois de support</li>
+      </ul>
+      <a href="#contact" class="btn primary">Commencer</a>
+    </div>
+    <div class="price-card fade-up">
+      <div class="price-name">E-Commerce</div>
+      <div class="price-amount"><span>€</span>999</div>
+      <div class="price-note">Paiement unique</div>
+      <ul class="price-features">
+        <li>Boutique complète</li>
+        <li>Paiement en ligne sécurisé</li>
+        <li>Gestion des stocks</li>
+        <li>Page produits illimitées</li>
+        <li>Tableau de bord admin</li>
+        <li>6 mois de support</li>
+      </ul>
+      <a href="#contact" class="btn">Commencer</a>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+
+<section class="contact-section" id="contact">
+  <div>
+    <div class="section-label">Contact</div>
+    <h2 class="contact-title">Parlons de votre <em>projet</em></h2>
+    <p class="contact-text">
+      Décrivez-moi votre activité et ce que vous recherchez. Je vous réponds sous 24h avec une estimation gratuite et sans engagement.
+    </p>
+    <div class="contact-info">
+      <div class="info-row">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4l6 5 6-5M2 4h12v9H2V4z" stroke="#e8ff47" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>iremovyou<strong>@gmail.com</strong></span>
+      </div>
+      <div class="info-row">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 10.5c0 .3-.06.6-.2.87a2.5 2.5 0 01-.6.73c-.37.33-.77.5-1.2.5-.3 0-.63-.07-1-.22s-.7-.36-1.07-.64c-.37-.28-.73-.6-1.1-.97-.36-.38-.68-.75-.96-1.12s-.49-.73-.64-1.07A2.9 2.9 0 016 7.47c0-.3.07-.6.2-.86.14-.27.33-.51.6-.73.32-.26.67-.39 1.04-.39.14 0 .28.03.4.09.13.06.25.15.35.29l1.16 1.63c.1.14.17.27.22.4.05.12.08.24.08.35 0 .14-.04.28-.12.41a2 2 0 01-.32.4c-.14.14-.19.28-.19.42s.04.28.12.42l1.09 1.09Z" stroke="#e8ff47" stroke-width="1.2"/></svg>
+        <span><strong>+33 7 80 46 06 96</strong></span>
+      </div>
+      <div class="info-row">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="7" r="2.5" stroke="#e8ff47" stroke-width="1.2"/><path d="M8 2C5.24 2 3 4.24 3 7c0 3.5 5 9 5 9s5-5.5 5-9c0-2.76-2.24-5-5-5z" stroke="#e8ff47" stroke-width="1.2"/></svg>
+        <span>France — Disponible partout</span>
+      </div>
+    </div>
+  </div>
+
+  <form class="form" id="contactForm" action="https://formspree.io/f/mlgaywwy" method="POST">
+    <div class="form-row">
+      <div class="field">
+        <label>Prénom</label>
+        <input type="text" placeholder="OLT" required>
+      </div>
+      <div class="field">
+        <label>Nom</label>
+        <input type="text" placeholder="SINANI" required>
+      </div>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" placeholder="jean@entreprise.fr" required>
+    </div>
+    <div class="field">
+      <label>Type d'activité</label>
+      <select>
+        <option value="">Choisissez...</option>
+        <option>Restaurant / Bar</option>
+        <option>Artisan / BTP</option>
+        <option>Commerce / Boutique</option>
+        <option>Santé / Beauté</option>
+        <option>Professionnel libéral</option>
+        <option>Association</option>
+        <option>Autre</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Budget estimé</label>
+      <select>
+        <option value="">Choisissez...</option>
+        <option>Moins de 300€</option>
+        <option>300€ – 600€</option>
+        <option>600€ – 1000€</option>
+        <option>Plus de 1000€</option>
+        <option>À définir ensemble</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Décrivez votre projet</label>
+      <textarea placeholder="Mon activité est... J'ai besoin de... Je voudrais que mon site..."></textarea>
+    </div>
+    <button type="submit" class="submit-btn">
+      Envoyer ma demande
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M2 8l10-6-3 6 3 6-10-6z" fill="currentColor"/>
+      </svg>
+    </button>
+    <div class="success-msg" id="successMsg">
+      ✓ Message envoyé ! Je vous réponds sous 24h.
+    </div>
+  </form>
+</section>
+
+<!-- FOOTER -->
+
+<footer>
+  <div class="footer-logo">Web<span>Craft</span></div>
+  <p>© 2026 WebCraft — Création de sites web pour entreprises</p>
+  <p>Fait avec ✦ en France</p>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top = my + 'px';
+  });
+
+  function animateRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  document.querySelectorAll('a, button, input, select, textarea').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '20px';
+      cursor.style.height = '20px';
+      ring.style.width = '54px';
+      ring.style.height = '54px';
+      ring.style.opacity = '0.8';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '12px';
+      cursor.style.height = '12px';
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+      ring.style.opacity = '0.5';
+    });
+  });
+
+  // Scroll animations
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // Form submit via Formspree
+  document.getElementById('contactForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('.submit-btn');
+    btn.textContent = 'Envoi en cours...';
+    btn.disabled = true;
+
+    const data = new FormData(this);
+    try {
+      const res = await fetch('https://formspree.io/f/mlgaywwy', {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        document.getElementById('successMsg').style.display = 'block';
+        btn.textContent = '✓ Envoyé';
+        this.reset();
+      } else {
+        btn.textContent = 'Erreur — Réessayez';
+        btn.disabled = false;
+      }
+    } catch(err) {
+      btn.textContent = 'Erreur — Réessayez';
+      btn.disabled = false;
+    }
+  });
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>
