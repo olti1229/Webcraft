@@ -4,507 +4,453 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WebCraft — Sites Web pour Entreprises</title>
+<title>WebCraft — Création de Sites Web Professionnels</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
+
 body {
-  background: #050508;
-  color: #e8e6f0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 400;
-  overflow-x: hidden;
+background: #07070f;
+color: #f0eeff;
+font-family: ‘Plus Jakarta Sans’, sans-serif;
+overflow-x: hidden;
 }
+
+/* CURSOR GLOW */
+.glow-cursor {
+position: fixed;
+width: 400px; height: 400px;
+background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+border-radius: 50%;
+pointer-events: none;
+z-index: 0;
+transform: translate(-50%, -50%);
+transition: left 0.3s ease, top 0.3s ease;
+}
+
+/* NAV */
 nav {
-  position: fixed; top: 0; left: 0; right: 0;
-  z-index: 100;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1.2rem 3rem;
-  background: rgba(5,5,8,0.8);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+display: flex; align-items: center; justify-content: space-between;
+padding: 1.1rem 3rem;
+background: rgba(7,7,15,0.85);
+backdrop-filter: blur(24px);
+border-bottom: 1px solid rgba(139,92,246,0.12);
 }
 .logo {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
-  font-size: 1.2rem;
-  color: #e8e6f0;
+font-weight: 800; font-size: 1.25rem;
+background: linear-gradient(135deg, #c4b5fd, #818cf8);
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.logo span {
-  background: linear-gradient(135deg, #a78bfa, #60a5fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.nav-links { display: flex; gap: 2.5rem; align-items: center; }
+.nav-links a {
+color: rgba(240,238,255,0.55); text-decoration: none;
+font-size: 0.83rem; font-weight: 500;
+transition: color 0.2s;
 }
-.nav-links { display: flex; gap: 2rem; }
-nav a {
-  color: rgba(232,230,240,0.75);
-  text-decoration: none;
-  font-size: 0.82rem;
-  transition: color 0.2s;
+.nav-links a:hover { color: #f0eeff; }
+.nav-cta {
+background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
+color: #fff !important;
+padding: 0.5rem 1.2rem !important;
+border-radius: 8px !important;
+font-weight: 600 !important;
 }
-nav a:hover { color: #e8e6f0; }
+
+/* HERO */
 .hero {
-  min-height: 100vh;
-  display: flex; flex-direction: column; justify-content: center;
-  padding: 8rem 3rem 4rem;
-  position: relative;
-  overflow: hidden;
+min-height: 100vh;
+display: flex; flex-direction: column; justify-content: center;
+padding: 9rem 3rem 5rem;
+position: relative; overflow: hidden;
 }
-.hero-glow {
-  position: absolute;
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(167,139,250,0.12) 0%, transparent 70%);
-  top: -80px; right: -80px;
-  pointer-events: none;
+.hero-blob1 {
+position: absolute; width: 700px; height: 700px;
+background: radial-gradient(circle, rgba(139,92,246,0.13) 0%, transparent 65%);
+top: -200px; right: -200px; pointer-events: none;
 }
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  background: rgba(167,139,250,0.1);
-  border: 1px solid rgba(167,139,250,0.3);
-  color: #a78bfa;
-  padding: 0.35rem 0.9rem;
-  border-radius: 100px;
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 1.5rem;
-  width: fit-content;
+.hero-blob2 {
+position: absolute; width: 500px; height: 500px;
+background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 65%);
+bottom: -100px; left: -100px; pointer-events: none;
 }
-.hero-badge::before {
-  content: '';
-  width: 5px; height: 5px;
-  background: #a78bfa;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
+.hero-eyebrow {
+display: inline-flex; align-items: center; gap: 0.6rem;
+background: rgba(139,92,246,0.1);
+border: 1px solid rgba(139,92,246,0.25);
+color: #c4b5fd;
+padding: 0.4rem 1rem; border-radius: 100px;
+font-size: 0.72rem; font-weight: 600;
+letter-spacing: 0.1em; text-transform: uppercase;
+margin-bottom: 2rem; width: fit-content;
 }
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+.hero-dot {
+width: 6px; height: 6px; background: #8b5cf6;
+border-radius: 50%; animation: blink 2s infinite;
 }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
 .hero h1 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
-  font-size: clamp(2rem, 5vw, 3.8rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.2rem;
+font-size: clamp(2.2rem, 5.5vw, 4.2rem);
+font-weight: 800; line-height: 1.1;
+letter-spacing: -0.03em; margin-bottom: 1.5rem;
 }
-.hero h1 .grad {
-  background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.hero h1 em {
+font-style: normal;
+background: linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #67e8f9 100%);
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.hero p {
-  font-size: 0.95rem;
-  line-height: 1.7;
-  color: rgba(232,230,240,0.72);
-  max-width: 460px;
-  margin-bottom: 2rem;
+.hero-sub {
+font-size: 1rem; line-height: 1.75;
+color: rgba(240,238,255,0.58); max-width: 520px;
+margin-bottom: 2.5rem; font-weight: 400;
 }
-.hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
-.btn-primary {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  background: linear-gradient(135deg, #a78bfa, #60a5fa);
-  color: #050508;
-  padding: 0.8rem 1.6rem;
-  border-radius: 10px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 500;
-  font-size: 0.85rem;
-  text-decoration: none;
-  transition: opacity 0.2s, transform 0.2s;
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 4rem; }
+.btn-main {
+display: inline-flex; align-items: center; gap: 0.5rem;
+background: linear-gradient(135deg, #8b5cf6, #6366f1);
+color: #fff; padding: 0.85rem 1.8rem;
+border-radius: 12px; font-weight: 600; font-size: 0.88rem;
+text-decoration: none; transition: opacity 0.2s, transform 0.2s;
+box-shadow: 0 0 30px rgba(139,92,246,0.3);
 }
-.btn-primary:hover { opacity: 0.85; transform: translateY(-2px); }
-.btn-secondary {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #e8e6f0;
-  padding: 0.8rem 1.6rem;
-  border-radius: 10px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.85rem;
-  text-decoration: none;
-  transition: background 0.2s;
+.btn-main:hover { opacity: 0.88; transform: translateY(-2px); }
+.btn-ghost {
+display: inline-flex; align-items: center; gap: 0.5rem;
+background: rgba(255,255,255,0.04);
+border: 1px solid rgba(255,255,255,0.1);
+color: #f0eeff; padding: 0.85rem 1.8rem;
+border-radius: 12px; font-size: 0.88rem; font-weight: 500;
+text-decoration: none; transition: background 0.2s, transform 0.2s;
 }
-.btn-secondary:hover { background: rgba(255,255,255,0.08); }
-.stats {
-  display: flex; gap: 3rem;
-  margin-top: 3rem;
-  padding-top: 2.5rem;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  flex-wrap: wrap;
+.btn-ghost:hover { background: rgba(255,255,255,0.07); transform: translateY(-2px); }
+
+/* STATS BAR */
+.stats-bar {
+display: flex; gap: 0; flex-wrap: wrap;
+border: 1px solid rgba(255,255,255,0.07);
+border-radius: 16px; overflow: hidden;
+background: rgba(255,255,255,0.02);
+max-width: 600px;
 }
-.stat-num {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
-  font-size: 1.6rem;
-  background: linear-gradient(135deg, #a78bfa, #60a5fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.stat-item {
+flex: 1; min-width: 120px;
+padding: 1.2rem 1.5rem;
+border-right: 1px solid rgba(255,255,255,0.07);
 }
-.stat-label {
-  font-size: 0.75rem;
-  color: rgba(232,230,240,0.4);
-  margin-top: 0.2rem;
+.stat-item:last-child { border-right: none; }
+.stat-val {
+font-size: 1.5rem; font-weight: 800;
+background: linear-gradient(135deg, #c4b5fd, #818cf8);
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+margin-bottom: 0.2rem;
 }
-.marquee-wrap {
-  padding: 1rem 0;
-  overflow: hidden;
-  border-top: 1px solid rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  background: rgba(255,255,255,0.02);
+.stat-lbl { font-size: 0.72rem; color: rgba(240,238,255,0.42); font-weight: 500; }
+
+/* TICKER */
+.ticker {
+overflow: hidden; padding: 0.9rem 0;
+border-top: 1px solid rgba(255,255,255,0.05);
+border-bottom: 1px solid rgba(255,255,255,0.05);
+background: rgba(139,92,246,0.03);
 }
-.marquee-track {
-  display: flex; gap: 2rem;
-  animation: marquee 25s linear infinite;
-  white-space: nowrap;
+.ticker-track {
+display: flex; gap: 2rem;
+animation: ticker 30s linear infinite; white-space: nowrap;
 }
-.marquee-track span {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(232,230,240,0.3);
+.ticker-track span { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(240,238,255,0.28); }
+.ticker-track .sep { color: #8b5cf6; }
+@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* SECTION COMMON */
+.sec { padding: 6rem 3rem; position: relative; }
+.sec-tag {
+display: inline-flex; align-items: center; gap: 0.5rem;
+color: #a78bfa; font-size: 0.7rem; font-weight: 700;
+letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem;
 }
-.marquee-track .dot { color: #a78bfa; }
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+.sec-tag::before { content:’’; width:16px; height:1px; background:#8b5cf6; }
+.sec-title {
+font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800;
+letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 0.9rem;
 }
-.section { padding: 5rem 3rem; }
-.section-tag {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  color: #a78bfa;
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 0.8rem;
+.sec-title span {
+background: linear-gradient(135deg, #a78bfa, #818cf8);
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.section-tag::before {
-  content: '';
-  width: 18px; height: 1px;
-  background: #a78bfa;
+.sec-desc { color: rgba(240,238,255,0.52); font-size: 0.92rem; line-height: 1.75; max-width: 480px; margin-bottom: 3rem; }
+
+/* SERVICES */
+.srv-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+.srv-card {
+background: rgba(255,255,255,0.025);
+border: 1px solid rgba(255,255,255,0.07);
+border-radius: 18px; padding: 1.8rem;
+transition: border-color 0.3s, transform 0.3s, background 0.3s;
+position: relative; overflow: hidden;
 }
-.section-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
-  font-size: clamp(1.6rem, 3.5vw, 2.5rem);
-  letter-spacing: -0.02em;
-  margin-bottom: 0.8rem;
-  line-height: 1.15;
+.srv-card::after {
+content: ‘’; position: absolute;
+inset: 0; border-radius: 18px;
+background: linear-gradient(135deg, rgba(139,92,246,0.07), transparent);
+opacity: 0; transition: opacity 0.3s;
 }
-.section-sub {
-  color: rgba(232,230,240,0.7);
-  font-size: 0.9rem;
-  line-height: 1.7;
-  max-width: 480px;
-  margin-bottom: 2.5rem;
+.srv-card:hover { border-color: rgba(139,92,246,0.35); transform: translateY(-4px); }
+.srv-card:hover::after { opacity: 1; }
+.srv-ico {
+width: 42px; height: 42px; border-radius: 11px;
+background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.15));
+display: flex; align-items: center; justify-content: center;
+font-size: 1.2rem; margin-bottom: 1.1rem;
 }
-.services-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.2rem;
-}
-.service-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 16px;
-  padding: 1.6rem;
-  transition: border-color 0.3s, transform 0.3s;
-  position: relative;
-  overflow: hidden;
-}
-.service-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #a78bfa, #60a5fa);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.service-card:hover { border-color: rgba(167,139,250,0.3); transform: translateY(-3px); }
-.service-card:hover::before { opacity: 1; }
-.service-icon {
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
-}
-.service-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
-}
-.service-desc {
-  font-size: 0.8rem;
-  line-height: 1.6;
-  color: rgba(232,230,240,0.7);
-}
-.pricing-section { padding: 5rem 3rem; background: rgba(255,255,255,0.01); }
-.pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.2rem;
-  margin-top: 2.5rem;
-}
+.srv-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; }
+.srv-txt { font-size: 0.8rem; line-height: 1.65; color: rgba(240,238,255,0.5); }
+
+/* PRICING */
+.pricing-bg { background: linear-gradient(180deg, #07070f 0%, #0c0b1a 50%, #07070f 100%); }
+.price-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; margin-top: 2.5rem; }
 .price-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 20px;
-  padding: 2rem;
-  position: relative;
-  transition: transform 0.3s, border-color 0.3s;
+background: rgba(255,255,255,0.025);
+border: 1px solid rgba(255,255,255,0.07);
+border-radius: 22px; padding: 2rem;
+position: relative; transition: transform 0.3s, border-color 0.3s;
 }
-.price-card:hover { transform: translateY(-5px); border-color: rgba(167,139,250,0.3); }
-.price-card.featured {
-  background: linear-gradient(135deg, rgba(167,139,250,0.07), rgba(96,165,250,0.04));
-  border-color: rgba(167,139,250,0.35);
+.price-card:hover { transform: translateY(-6px); border-color: rgba(139,92,246,0.3); }
+.price-card.hot {
+background: linear-gradient(145deg, rgba(139,92,246,0.1), rgba(99,102,241,0.06));
+border-color: rgba(139,92,246,0.4);
+box-shadow: 0 0 40px rgba(139,92,246,0.1);
 }
-.featured-badge {
-  position: absolute;
-  top: -1px; left: 50%; transform: translateX(-50%);
-  background: linear-gradient(135deg, #a78bfa, #60a5fa);
-  color: #050508;
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.25rem 0.9rem;
-  border-radius: 0 0 8px 8px;
+.hot-tag {
+position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+background: linear-gradient(135deg, #8b5cf6, #6366f1);
+color: #fff; font-size: 0.58rem; font-weight: 700;
+letter-spacing: 0.1em; text-transform: uppercase;
+padding: 0.22rem 0.9rem; border-radius: 0 0 9px 9px;
 }
-.price-name {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700;
-  font-size: 0.75rem;
-  color: rgba(232,230,240,0.7);
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.p-tier { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(240,238,255,0.45); margin-bottom: 1rem; }
+.p-price {
+font-size: 3rem; font-weight: 800; line-height: 1;
+background: linear-gradient(135deg, #f0eeff, #c4b5fd);
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+margin-bottom: 0.2rem;
 }
-.price-amount {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
-  font-size: 2.8rem;
-  line-height: 1;
-  margin-bottom: 0.2rem;
-  background: linear-gradient(135deg, #e8e6f0, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.p-price sup { font-size: 1.3rem; }
+.p-period { font-size: 0.72rem; color: rgba(240,238,255,0.3); margin-bottom: 1.5rem; }
+.p-line { height: 1px; background: rgba(255,255,255,0.06); margin-bottom: 1.3rem; }
+.p-feats { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.8rem; }
+.p-feats li { font-size: 0.8rem; color: rgba(240,238,255,0.68); display: flex; align-items: center; gap: 0.55rem; }
+.p-feats li::before { content:‘✓’; color:#a78bfa; font-size:0.68rem; font-weight:700; flex-shrink:0; }
+.p-btn {
+display: block; width: 100%; padding: 0.82rem;
+text-align: center; border-radius: 11px;
+font-size: 0.83rem; font-weight: 600; text-decoration: none;
+border: 1px solid rgba(255,255,255,0.1);
+color: #f0eeff; background: rgba(255,255,255,0.05);
+transition: background 0.2s, transform 0.2s; cursor: pointer;
 }
-.price-amount sup { font-size: 1.2rem; }
-.price-note { font-size: 0.72rem; color: rgba(232,230,240,0.3); margin-bottom: 1.5rem; }
-.price-divider { height: 1px; background: rgba(255,255,255,0.06); margin-bottom: 1.2rem; }
-.price-features {
-  list-style: none;
-  display: flex; flex-direction: column; gap: 0.65rem;
-  margin-bottom: 1.8rem;
+.p-btn:hover { background: rgba(255,255,255,0.09); }
+.p-btn.cta {
+background: linear-gradient(135deg, #8b5cf6, #6366f1);
+color: #fff; border-color: transparent;
+box-shadow: 0 4px 20px rgba(139,92,246,0.3);
 }
-.price-features li {
-  font-size: 0.8rem;
-  color: rgba(232,230,240,0.78);
-  display: flex; align-items: center; gap: 0.6rem;
+.p-btn.cta:hover { opacity: 0.88; }
+
+/* WHY */
+.why-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.2rem; }
+.why-card {
+display: flex; gap: 1.1rem; align-items: flex-start;
+background: rgba(255,255,255,0.025);
+border: 1px solid rgba(255,255,255,0.07);
+border-radius: 16px; padding: 1.5rem;
+transition: border-color 0.3s;
 }
-.price-features li::before { content: '✓'; color: #a78bfa; font-size: 0.7rem; font-weight: 600; }
-.price-btn {
-  display: block; width: 100%;
-  padding: 0.8rem;
-  text-align: center;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 500;
-  text-decoration: none;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #e8e6f0;
-  background: rgba(255,255,255,0.04);
-  transition: background 0.2s;
-  cursor: pointer;
+.why-card:hover { border-color: rgba(139,92,246,0.3); }
+.why-ico {
+width: 38px; height: 38px; flex-shrink: 0;
+background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(99,102,241,0.12));
+border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem;
 }
-.price-btn:hover { background: rgba(255,255,255,0.08); }
-.price-btn.primary {
-  background: linear-gradient(135deg, #a78bfa, #60a5fa);
-  color: #050508;
-  border-color: transparent;
-  font-weight: 600;
-}
-.price-btn.primary:hover { opacity: 0.85; }
-.contact-section {
-  padding: 5rem 3rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: start;
+.why-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem; }
+.why-txt { font-size: 0.78rem; line-height: 1.6; color: rgba(240,238,255,0.5); }
+
+/* CONTACT */
+.contact-wrap {
+display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; align-items: start;
 }
 .contact-info { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.5rem; }
-.info-row {
-  display: flex; align-items: center; gap: 0.8rem;
-  font-size: 0.82rem;
-  color: rgba(232,230,240,0.75);
-  padding: 0.7rem 0.9rem;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 10px;
+.c-row {
+display: flex; align-items: center; gap: 0.8rem;
+padding: 0.8rem 1rem; border-radius: 12px;
+background: rgba(255,255,255,0.03);
+border: 1px solid rgba(255,255,255,0.06);
+font-size: 0.82rem; color: rgba(240,238,255,0.65);
 }
-.info-row strong { color: #e8e6f0; }
-.info-icon {
-  width: 28px; height: 28px;
-  background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(96,165,250,0.15));
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+.c-row strong { color: #f0eeff; }
+.c-ico {
+width: 30px; height: 30px; flex-shrink: 0;
+background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(99,102,241,0.12));
+border-radius: 8px; display: flex; align-items: center; justify-content: center;
 }
+
+/* FORM */
 .form { display: flex; flex-direction: column; gap: 0.9rem; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
 .field { display: flex; flex-direction: column; gap: 0.35rem; }
-.field label {
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(232,230,240,0.4);
-}
+.field label { font-size: 0.67rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(240,238,255,0.38); font-weight: 600; }
 .field input, .field select, .field textarea {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: #e8e6f0;
-  padding: 0.75rem 0.9rem;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.85rem;
-  outline: none;
-  border-radius: 10px;
-  transition: border-color 0.2s, background 0.2s;
+background: rgba(255,255,255,0.04);
+border: 1px solid rgba(255,255,255,0.08);
+color: #f0eeff; padding: 0.78rem 0.95rem;
+font-family: ‘Plus Jakarta Sans’, sans-serif;
+font-size: 0.85rem; outline: none; border-radius: 11px;
+transition: border-color 0.2s, background 0.2s;
 }
 .field input:focus, .field select:focus, .field textarea:focus {
-  border-color: rgba(167,139,250,0.5);
-  background: rgba(167,139,250,0.04);
+border-color: rgba(139,92,246,0.5);
+background: rgba(139,92,246,0.04);
 }
 .field textarea { resize: none; min-height: 100px; }
 .field select { appearance: none; }
-.field select option { background: #0f0f14; }
-.submit-btn {
-  background: linear-gradient(135deg, #a78bfa, #60a5fa);
-  color: #050508;
-  border: none;
-  padding: 0.9rem 2rem;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 600;
-  font-size: 0.88rem;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.2s;
-  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+.field select option { background: #0f0e1f; }
+.sub-btn {
+background: linear-gradient(135deg, #8b5cf6, #6366f1);
+color: #fff; border: none; padding: 0.9rem 2rem;
+font-family: ‘Plus Jakarta Sans’, sans-serif;
+font-weight: 700; font-size: 0.88rem; border-radius: 11px;
+cursor: pointer; transition: opacity 0.2s, transform 0.2s;
+display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+box-shadow: 0 4px 20px rgba(139,92,246,0.3);
 }
-.submit-btn:hover { opacity: 0.85; transform: translateY(-2px); }
-.success-msg {
-  display: none;
-  background: rgba(52,211,153,0.1);
-  border: 1px solid rgba(52,211,153,0.3);
-  color: #34d399;
-  padding: 0.9rem 1.1rem;
-  border-radius: 10px;
-  font-size: 0.85rem;
+.sub-btn:hover { opacity: 0.88; transform: translateY(-2px); }
+.ok-msg {
+display: none; background: rgba(52,211,153,0.08);
+border: 1px solid rgba(52,211,153,0.3); color: #34d399;
+padding: 0.9rem 1.1rem; border-radius: 11px; font-size: 0.85rem;
 }
+
+/* FOOTER */
 footer {
-  border-top: 1px solid rgba(255,255,255,0.06);
-  padding: 1.8rem 3rem;
-  display: flex; align-items: center; justify-content: space-between;
+border-top: 1px solid rgba(255,255,255,0.05);
+padding: 2rem 3rem;
+display: flex; align-items: center; justify-content: space-between;
+background: rgba(255,255,255,0.01);
 }
-footer p { font-size: 0.75rem; color: rgba(232,230,240,0.3); }
-.footer-logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.1rem; }
-.footer-logo span {
-  background: linear-gradient(135deg, #a78bfa, #60a5fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.ft-logo {
+font-weight: 800; font-size: 1.1rem;
+background: linear-gradient(135deg, #c4b5fd, #818cf8);
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.fade-up { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
-.fade-up.visible { opacity: 1; transform: translateY(0); }
+footer p { font-size: 0.74rem; color: rgba(240,238,255,0.28); }
+
+/* ANIMATIONS */
+.fade { opacity: 0; transform: translateY(22px); transition: opacity 0.65s ease, transform 0.65s ease; }
+.fade.in { opacity: 1; transform: translateY(0); }
+
 @media (max-width: 900px) {
-  nav { padding: 1rem 1.5rem; }
-  .nav-links { display: none; }
-  .hero { padding: 6rem 1.5rem 3rem; }
-  .section, .pricing-section { padding: 3.5rem 1.5rem; }
-  .services-grid, .pricing-grid { grid-template-columns: 1fr; }
-  .contact-section { grid-template-columns: 1fr; padding: 3.5rem 1.5rem; gap: 2.5rem; }
-  .form-row { grid-template-columns: 1fr; }
-  .stats { gap: 1.5rem; }
-  footer { flex-direction: column; gap: 0.8rem; text-align: center; }
+nav { padding: 1rem 1.5rem; }
+.nav-links { display: none; }
+.hero { padding: 7rem 1.5rem 3rem; }
+.sec { padding: 3.5rem 1.5rem; }
+.srv-grid, .price-grid, .why-grid { grid-template-columns: 1fr; }
+.contact-wrap { grid-template-columns: 1fr; gap: 2.5rem; }
+.form-row { grid-template-columns: 1fr; }
+.stats-bar { flex-direction: row; }
+footer { flex-direction: column; gap: 0.8rem; text-align: center; }
 }
 </style>
+
 </head>
 <body>
 
+<div class="glow-cursor" id="gc"></div>
+
+<!-- NAV -->
+
 <nav>
-  <div class="logo">Web<span>Craft</span></div>
+  <div class="logo">WebCraft</div>
   <div class="nav-links">
     <a href="#services">Services</a>
     <a href="#tarifs">Tarifs</a>
-    <a href="#contact">Contact</a>
+    <a href="#pourquoi">Pourquoi nous</a>
+    <a href="#contact" class="nav-cta">Devis gratuit</a>
   </div>
 </nav>
 
+<!-- HERO -->
+
 <section class="hero">
-  <div class="hero-glow"></div>
-  <div class="hero-badge">Agence Web Freelance</div>
-  <h1>Votre site web<br><span class="grad">pro et moderne</span><br>en quelques jours.</h1>
-  <p>Je crée des sites élégants et efficaces pour les entreprises qui veulent se démarquer en ligne. Rapide, abordable, professionnel.</p>
-  <div class="hero-btns">
-    <a href="#contact" class="btn-primary">Demander un devis <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
-    <a href="#tarifs" class="btn-secondary">Voir les tarifs</a>
+  <div class="hero-blob1"></div>
+  <div class="hero-blob2"></div>
+  <div class="hero-eyebrow"><div class="hero-dot"></div>Agence Web Freelance — France</div>
+  <h1>Votre entreprise<br>mérite un site<br><em>qui convertit.</em></h1>
+  <p class="hero-sub">Je conçois des sites web modernes, rapides et optimisés pour Google. Livraison en 5 jours, prix accessible, résultat professionnel.</p>
+  <div class="hero-actions">
+    <a href="#contact" class="btn-main">Demander un devis gratuit <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
+    <a href="#tarifs" class="btn-ghost">Voir les tarifs</a>
   </div>
-  <div class="stats">
-    <div><div class="stat-num">5j</div><div class="stat-label">Délai de livraison</div></div>
-    <div><div class="stat-num">100%</div><div class="stat-label">Satisfaction client</div></div>
-    <div><div class="stat-num">dès 29€</div><div class="stat-label">Prix de départ</div></div>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-val">5j</div><div class="stat-lbl">Délai moyen</div></div>
+    <div class="stat-item"><div class="stat-val">100%</div><div class="stat-lbl">Satisfaction</div></div>
+    <div class="stat-item"><div class="stat-val">dès 29€</div><div class="stat-lbl">Sans abonnement</div></div>
   </div>
 </section>
 
-<div class="marquee-wrap">
-  <div class="marquee-track">
-    <span>Sites Vitrines</span><span class="dot"> ✦ </span><span>E-Commerce</span><span class="dot"> ✦ </span><span>Restaurants</span><span class="dot"> ✦ </span><span>Artisans</span><span class="dot"> ✦ </span><span>Coiffeurs</span><span class="dot"> ✦ </span><span>Médecins</span><span class="dot"> ✦ </span><span>Boutiques</span><span class="dot"> ✦ </span><span>Agences</span><span class="dot"> ✦ </span><span>Sites Vitrines</span><span class="dot"> ✦ </span><span>E-Commerce</span><span class="dot"> ✦ </span><span>Restaurants</span><span class="dot"> ✦ </span><span>Artisans</span><span class="dot"> ✦ </span><span>Coiffeurs</span><span class="dot"> ✦ </span><span>Médecins</span><span class="dot"> ✦ </span><span>Boutiques</span><span class="dot"> ✦ </span><span>Agences</span><span class="dot"> ✦ </span>
+<!-- TICKER -->
+
+<div class="ticker">
+  <div class="ticker-track">
+    <span>Sites Vitrines</span><span class="sep"> ✦ </span><span>E-Commerce</span><span class="sep"> ✦ </span><span>Restaurants</span><span class="sep"> ✦ </span><span>Artisans</span><span class="sep"> ✦ </span><span>Coiffeurs</span><span class="sep"> ✦ </span><span>Médecins</span><span class="sep"> ✦ </span><span>Boutiques</span><span class="sep"> ✦ </span><span>PME</span><span class="sep"> ✦ </span><span>Associations</span><span class="sep"> ✦ </span>
+    <span>Sites Vitrines</span><span class="sep"> ✦ </span><span>E-Commerce</span><span class="sep"> ✦ </span><span>Restaurants</span><span class="sep"> ✦ </span><span>Artisans</span><span class="sep"> ✦ </span><span>Coiffeurs</span><span class="sep"> ✦ </span><span>Médecins</span><span class="sep"> ✦ </span><span>Boutiques</span><span class="sep"> ✦ </span><span>PME</span><span class="sep"> ✦ </span><span>Associations</span><span class="sep"> ✦ </span>
   </div>
 </div>
 
-<section class="section" id="services">
-  <div class="section-tag">Ce que je fais</div>
-  <h2 class="section-title">Des sites qui <span style="background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">convertissent</span></h2>
-  <p class="section-sub">Chaque site est conçu sur mesure, optimisé pour Google et adapté à tous les écrans.</p>
-  <div class="services-grid">
-    <div class="service-card fade-up"><div class="service-icon">🖥️</div><div class="service-title">Site Vitrine</div><p class="service-desc">Présentez votre activité avec style. Design moderne, navigation fluide, formulaire de contact.</p></div>
-    <div class="service-card fade-up"><div class="service-icon">🛍️</div><div class="service-title">Boutique en Ligne</div><p class="service-desc">Vendez vos produits 24h/24. Paiement sécurisé, gestion des stocks simple et efficace.</p></div>
-    <div class="service-card fade-up"><div class="service-icon">🔍</div><div class="service-title">Référencement SEO</div><p class="service-desc">Apparaissez en premier sur Google. Optimisation technique pour attirer vos clients.</p></div>
-    <div class="service-card fade-up"><div class="service-icon">✏️</div><div class="service-title">Refonte de Site</div><p class="service-desc">Votre site est daté ? Je le modernise avec un design actuel et une meilleure expérience.</p></div>
-    <div class="service-card fade-up"><div class="service-icon">📱</div><div class="service-title">Design Responsive</div><p class="service-desc">Parfait sur mobile, tablette et ordinateur. Vos clients naviguent partout, votre site aussi.</p></div>
-    <div class="service-card fade-up"><div class="service-icon">⚡</div><div class="service-title">Livraison Rapide</div><p class="service-desc">Site livré en 5 à 10 jours. Processus clair, communication directe, zéro surprise.</p></div>
+<!-- SERVICES -->
+
+<section class="sec" id="services">
+  <div class="sec-tag">Services</div>
+  <h2 class="sec-title">Tout ce dont vous<br>avez <span>besoin</span></h2>
+  <p class="sec-desc">Des solutions web complètes pour développer votre présence en ligne et attirer de nouveaux clients.</p>
+  <div class="srv-grid">
+    <div class="srv-card fade"><div class="srv-ico">🖥️</div><div class="srv-name">Site Vitrine</div><p class="srv-txt">Présentez votre activité avec un design soigné. Navigation fluide, formulaire de contact, adapté mobile.</p></div>
+    <div class="srv-card fade"><div class="srv-ico">🛍️</div><div class="srv-name">Boutique en Ligne</div><p class="srv-txt">Vendez vos produits 24h/24. Paiement sécurisé, gestion des stocks, tableau de bord simple.</p></div>
+    <div class="srv-card fade"><div class="srv-ico">📈</div><div class="srv-name">Référencement SEO</div><p class="srv-txt">Apparaissez en tête sur Google. Optimisation technique et contenu ciblé pour vos clients.</p></div>
+    <div class="srv-card fade"><div class="srv-ico">🔄</div><div class="srv-name">Refonte de Site</div><p class="srv-txt">Votre site est daté ? Je le modernise avec un design actuel et une meilleure performance.</p></div>
+    <div class="srv-card fade"><div class="srv-ico">📱</div><div class="srv-name">Design Responsive</div><p class="srv-txt">Parfait sur tous les appareils. Vos clients vous trouvent depuis mobile, tablette ou ordinateur.</p></div>
+    <div class="srv-card fade"><div class="srv-ico">🛡️</div><div class="srv-name">Maintenance</div><p class="srv-txt">Mises à jour, sauvegardes et sécurité. Votre site toujours en ligne et protégé.</p></div>
   </div>
 </section>
 
-<section class="pricing-section" id="tarifs">
-  <div class="section-tag">Tarifs</div>
-  <h2 class="section-title">Simple et <span style="background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">transparent</span></h2>
-  <p class="section-sub">Pas de frais cachés. Choisissez l'offre qui correspond à votre projet.</p>
-  <div class="pricing-grid">
-    <div class="price-card fade-up">
-      <div class="price-name">Starter</div>
-      <div class="price-amount"><sup>€</sup>29</div>
-      <div class="price-note">Paiement unique</div>
-      <div class="price-divider"></div>
-      <ul class="price-features">
+<!-- PRICING -->
+
+<section class="sec pricing-bg" id="tarifs">
+  <div class="sec-tag">Tarifs</div>
+  <h2 class="sec-title">Transparent.<br><span>Sans surprise.</span></h2>
+  <p class="sec-desc">Un seul paiement, pas d'abonnement caché. Choisissez l'offre adaptée à votre projet.</p>
+  <div class="price-grid">
+    <div class="price-card fade">
+      <div class="p-tier">Starter</div>
+      <div class="p-price"><sup>€</sup>29</div>
+      <div class="p-period">Paiement unique</div>
+      <div class="p-line"></div>
+      <ul class="p-feats">
         <li>Site vitrine 3 pages</li>
         <li>Design responsive mobile</li>
         <li>Formulaire de contact</li>
         <li>Mise en ligne incluse</li>
         <li>1 mois de support</li>
       </ul>
-      <a href="https://paypal.me/OltSinani/29" target="_blank" class="price-btn">Payer 29€ — PayPal</a>
+      <a href="https://paypal.me/OltSinani/29" target="_blank" class="p-btn">Payer 29€ via PayPal</a>
     </div>
-    <div class="price-card featured fade-up">
-      <div class="featured-badge">Populaire</div>
-      <div class="price-name">Business</div>
-      <div class="price-amount"><sup>€</sup>59</div>
-      <div class="price-note">Paiement unique</div>
-      <div class="price-divider"></div>
-      <ul class="price-features">
+    <div class="price-card hot fade">
+      <div class="hot-tag">Le plus populaire</div>
+      <div class="p-tier">Business</div>
+      <div class="p-price"><sup>€</sup>59</div>
+      <div class="p-period">Paiement unique</div>
+      <div class="p-line"></div>
+      <ul class="p-feats">
         <li>Site vitrine 6 pages</li>
         <li>Design sur-mesure</li>
         <li>Optimisation SEO</li>
@@ -512,14 +458,14 @@ footer p { font-size: 0.75rem; color: rgba(232,230,240,0.3); }
         <li>Blog / actualites</li>
         <li>3 mois de support</li>
       </ul>
-      <a href="https://paypal.me/OltSinani/59" target="_blank" class="price-btn primary">Payer 59€ — PayPal</a>
+      <a href="https://paypal.me/OltSinani/59" target="_blank" class="p-btn cta">Payer 59€ via PayPal</a>
     </div>
-    <div class="price-card fade-up">
-      <div class="price-name">E-Commerce</div>
-      <div class="price-amount"><sup>€</sup>99</div>
-      <div class="price-note">Paiement unique</div>
-      <div class="price-divider"></div>
-      <ul class="price-features">
+    <div class="price-card fade">
+      <div class="p-tier">E-Commerce</div>
+      <div class="p-price"><sup>€</sup>99</div>
+      <div class="p-period">Paiement unique</div>
+      <div class="p-line"></div>
+      <ul class="p-feats">
         <li>Boutique complete</li>
         <li>Paiement en ligne securise</li>
         <li>Gestion des stocks</li>
@@ -527,84 +473,117 @@ footer p { font-size: 0.75rem; color: rgba(232,230,240,0.3); }
         <li>Tableau de bord admin</li>
         <li>6 mois de support</li>
       </ul>
-      <a href="https://paypal.me/OltSinani/99" target="_blank" class="price-btn">Payer 99€ — PayPal</a>
+      <a href="https://paypal.me/OltSinani/99" target="_blank" class="p-btn">Payer 99€ via PayPal</a>
     </div>
   </div>
 </section>
 
-<section class="contact-section" id="contact">
-  <div>
-    <div class="section-tag">Contact</div>
-    <h2 class="section-title">Parlons de votre <span style="background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">projet</span></h2>
-    <p style="color:rgba(232,230,240,0.5);font-size:0.88rem;line-height:1.7;margin-bottom:1.5rem;">Decrivez votre activite et vos besoins. Je vous reponds sous 24h avec une estimation gratuite.</p>
-    <div class="contact-info">
-      <div class="info-row"><div class="info-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 4l6 5 6-5M2 4h12v9H2V4z" stroke="#a78bfa" stroke-width="1.2" stroke-linecap="round"/></svg></div><span>iremovyou<strong>@gmail.com</strong></span></div>
-      <div class="info-row"><div class="info-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M13 10.5c0 .3-.06.6-.2.87a2.5 2.5 0 01-.6.73c-.37.33-.77.5-1.2.5-.3 0-.63-.07-1-.22s-.7-.36-1.07-.64c-.37-.28-.73-.6-1.1-.97-.36-.38-.68-.75-.96-1.12s-.49-.73-.64-1.07A2.9 2.9 0 016 7.47c0-.3.07-.6.2-.86.14-.27.33-.51.6-.73.32-.26.67-.39 1.04-.39.14 0 .28.03.4.09l1.16 1.63c.1.14.22.4.22.4.05.12.08.24.08.35 0 .14-.04.28-.12.41a2 2 0 01-.32.4c-.14.14-.19.28-.19.42s.04.28.12.42l1.09 1.09Z" stroke="#a78bfa" stroke-width="1.2"/></svg></div><span><strong>+33 7 80 46 06 96</strong></span></div>
-      <div class="info-row"><div class="info-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="7" r="2.5" stroke="#a78bfa" stroke-width="1.2"/><path d="M8 2C5.24 2 3 4.24 3 7c0 3.5 5 9 5 9s5-5.5 5-9c0-2.76-2.24-5-5-5z" stroke="#a78bfa" stroke-width="1.2"/></svg></div><span>France — Disponible partout</span></div>
-    </div>
+<!-- WHY -->
+
+<section class="sec" id="pourquoi">
+  <div class="sec-tag">Pourquoi nous</div>
+  <h2 class="sec-title">Ce qui nous<br><span>différencie</span></h2>
+  <p class="sec-desc">Un service simple, direct et efficace. Pas de jargon, pas de délai interminable.</p>
+  <div class="why-grid">
+    <div class="why-card fade"><div class="why-ico">⚡</div><div><div class="why-name">Livraison en 5 jours</div><p class="why-txt">Votre site est en ligne en moins d'une semaine. Processus clair, communication directe, zero surprise.</p></div></div>
+    <div class="why-card fade"><div class="why-ico">💎</div><div><div class="why-name">Design premium</div><p class="why-txt">Des sites modernes qui inspirent confiance et donnent envie de contacter votre entreprise.</p></div></div>
+    <div class="why-card fade"><div class="why-ico">📍</div><div><div class="why-name">SEO local inclus</div><p class="why-txt">Optimise pour que vos clients locaux vous trouvent sur Google Maps et dans les recherches.</p></div></div>
+    <div class="why-card fade"><div class="why-ico">🤝</div><div><div class="why-name">Support inclus</div><p class="why-txt">Je reste disponible apres la livraison. Modifications, questions, mises a jour — je suis la.</p></div></div>
   </div>
-  <form class="form" id="contactForm" action="https://formspree.io/f/mlgaywwy" method="POST">
-    <div class="form-row">
-      <div class="field"><label>Prenom</label><input type="text" name="prenom" placeholder="Votre prenom" required></div>
-      <div class="field"><label>Nom</label><input type="text" name="nom" placeholder="Votre nom" required></div>
-    </div>
-    <div class="field"><label>Email</label><input type="email" name="email" placeholder="votre@email.fr" required></div>
-    <div class="field"><label>Type d'activite</label>
-      <select name="activite">
-        <option value="">Choisissez...</option>
-        <option>Restaurant / Bar</option>
-        <option>Artisan / BTP</option>
-        <option>Commerce / Boutique</option>
-        <option>Sante / Beaute</option>
-        <option>Professionnel liberal</option>
-        <option>Association</option>
-        <option>Autre</option>
-      </select>
-    </div>
-    <div class="field"><label>Budget</label>
-      <select name="budget">
-        <option value="">Choisissez...</option>
-        <option>Starter - 29 euros</option>
-        <option>Business - 59 euros</option>
-        <option>E-Commerce - 99 euros</option>
-        <option>A definir ensemble</option>
-      </select>
-    </div>
-    <div class="field"><label>Decrivez votre projet</label><textarea name="message" placeholder="Mon activite est... J'ai besoin de... Je voudrais que mon site..."></textarea></div>
-    <button type="submit" class="submit-btn">Envoyer ma demande <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8l10-6-3 6 3 6-10-6z" fill="currentColor"/></svg></button>
-    <div class="success-msg" id="successMsg">Message envoye ! Je vous reponds sous 24h.</div>
-  </form>
 </section>
+
+<!-- CONTACT -->
+
+<section class="sec" id="contact" style="background:rgba(139,92,246,0.02);">
+  <div class="contact-wrap">
+    <div>
+      <div class="sec-tag">Contact</div>
+      <h2 class="sec-title">Votre projet<br><span>commence ici</span></h2>
+      <p style="color:rgba(240,238,255,0.52);font-size:0.88rem;line-height:1.75;margin-bottom:1.5rem;">Décrivez votre activité. Je vous réponds sous 24h avec une estimation gratuite et sans engagement.</p>
+      <div class="contact-info">
+        <div class="c-row"><div class="c-ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 4l6 5 6-5M2 4h12v9H2V4z" stroke="#a78bfa" stroke-width="1.3" stroke-linecap="round"/></svg></div><span>iremovyou<strong>@gmail.com</strong></span></div>
+        <div class="c-row"><div class="c-ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M13 10.5c0 .3-.06.6-.2.87a2.5 2.5 0 01-.6.73c-.37.33-.77.5-1.2.5-.3 0-.63-.07-1-.22s-.7-.36-1.07-.64c-.37-.28-.73-.6-1.1-.97-.36-.38-.68-.75-.96-1.12s-.49-.73-.64-1.07A2.9 2.9 0 016 7.47c0-.3.07-.6.2-.86.14-.27.33-.51.6-.73.32-.26.67-.39 1.04-.39.14 0 .28.03.4.09l1.16 1.63c.1.14.22.4.22.4.05.12.08.35 0 .14-.04.28-.12.41a2 2 0 01-.32.4c-.14.14-.19.42s.04.28.12.42l1.09 1.09Z" stroke="#a78bfa" stroke-width="1.3"/></svg></div><span><strong>+33 7 80 46 06 96</strong></span></div>
+        <div class="c-row"><div class="c-ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="7" r="2.5" stroke="#a78bfa" stroke-width="1.3"/><path d="M8 2C5.24 2 3 4.24 3 7c0 3.5 5 9 5 9s5-5.5 5-9c0-2.76-2.24-5-5-5z" stroke="#a78bfa" stroke-width="1.3"/></svg></div><span>France — Disponible partout</span></div>
+      </div>
+    </div>
+    <form class="form" id="contactForm" action="https://formspree.io/f/mlgaywwy" method="POST">
+      <div class="form-row">
+        <div class="field"><label>Prenom</label><input type="text" name="prenom" placeholder="Votre prenom" required></div>
+        <div class="field"><label>Nom</label><input type="text" name="nom" placeholder="Votre nom" required></div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" name="email" placeholder="votre@email.fr" required></div>
+      <div class="field"><label>Activite</label>
+        <select name="activite">
+          <option value="">Choisissez...</option>
+          <option>Restaurant / Bar</option><option>Artisan / BTP</option>
+          <option>Commerce / Boutique</option><option>Sante / Beaute</option>
+          <option>Professionnel liberal</option><option>Association</option><option>Autre</option>
+        </select>
+      </div>
+      <div class="field"><label>Offre souhaitee</label>
+        <select name="budget">
+          <option value="">Choisissez...</option>
+          <option>Starter - 29 euros</option>
+          <option>Business - 59 euros</option>
+          <option>E-Commerce - 99 euros</option>
+          <option>A definir ensemble</option>
+        </select>
+      </div>
+      <div class="field"><label>Votre projet</label><textarea name="message" placeholder="Decrivez votre activite et ce que vous attendez de votre site..."></textarea></div>
+      <button type="submit" class="sub-btn">Envoyer ma demande <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8l10-6-3 6 3 6-10-6z" fill="currentColor"/></svg></button>
+      <div class="ok-msg" id="okMsg">Message envoye ! Je vous reponds sous 24h.</div>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
 
 <footer>
-  <div class="footer-logo">Web<span>Craft</span></div>
-  <p>2026 WebCraft - Creation de sites web pour entreprises</p>
-  <p>Fait avec amour en France</p>
+  <div class="ft-logo">WebCraft</div>
+  <p>2026 WebCraft — Creation de sites web professionnels</p>
+  <p>Fait avec passion en France</p>
 </footer>
 
 <script>
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) setTimeout(() => entry.target.classList.add('visible'), i * 100);
-    });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-
-  document.getElementById('contactForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const btn = this.querySelector('.submit-btn');
-    btn.textContent = 'Envoi en cours...';
-    btn.disabled = true;
-    const data = new FormData(this);
-    try {
-      const res = await fetch('https://formspree.io/f/mlgaywwy', { method: 'POST', body: data, headers: { 'Accept': 'application/json' } });
-      if (res.ok) { document.getElementById('successMsg').style.display = 'block'; btn.textContent = 'Envoye !'; this.reset(); }
-      else { btn.textContent = 'Erreur - Reessayez'; btn.disabled = false; }
-    } catch(err) { btn.textContent = 'Erreur - Reessayez'; btn.disabled = false; }
+  // Cursor glow
+  const gc = document.getElementById('gc');
+  document.addEventListener('mousemove', e => {
+    gc.style.left = e.clientX + 'px';
+    gc.style.top = e.clientY + 'px';
   });
 
+  // Scroll animations
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) setTimeout(() => e.target.classList.add('in'), i * 90);
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+
+  // Form
+  document.getElementById('contactForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('.sub-btn');
+    btn.textContent = 'Envoi...'; btn.disabled = true;
+    try {
+      const res = await fetch('https://formspree.io/f/mlgaywwy', {
+        method: 'POST', body: new FormData(this),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        document.getElementById('okMsg').style.display = 'block';
+        btn.textContent = 'Envoye !'; this.reset();
+      } else { btn.textContent = 'Erreur - Reessayez'; btn.disabled = false; }
+    } catch { btn.textContent = 'Erreur - Reessayez'; btn.disabled = false; }
+  });
+
+  // Smooth scroll
   document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => { e.preventDefault(); const t = document.querySelector(a.getAttribute('href')); if (t) t.scrollIntoView({ behavior: 'smooth' }); });
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) t.scrollIntoView({ behavior: 'smooth' });
+    });
   });
 </script>
 
