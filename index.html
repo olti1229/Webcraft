@@ -4,400 +4,415 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WebCraft — Création de Sites Web Professionnels en France</title>
+<title>WebCraft — Agence Web Premium | Sites Pro dès 29€</title>
 <meta name="description" content="WebCraft crée des sites web modernes et professionnels pour les entreprises françaises. Design sur-mesure, SEO, livraison en 5 jours. Dès 29€.">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:#07070f;color:#f0eeff;font-family:'Plus Jakarta Sans',sans-serif;overflow-x:hidden}
+:root{
+  --purple:#8b5cf6;
+  --blue:#6366f1;
+  --cyan:#22d3ee;
+  --green:#10b981;
+  --bg:#06060e;
+  --bg2:#0a0a18;
+  --card:rgba(255,255,255,0.03);
+  --border:rgba(255,255,255,0.07);
+  --text:#f0eeff;
+  --muted:rgba(240,238,255,0.5);
+}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;overflow-x:hidden}
 
 /* LOADER */
-#loader{position:fixed;inset:0;background:#07070f;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s}
-#loader.gone{opacity:0;pointer-events:none}
-.loader-logo{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#c4b5fd,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:pulse2 1s infinite}
-@keyframes pulse2{0%,100%{opacity:1}50%{opacity:0.4}}
+#loader{position:fixed;inset:0;background:var(–bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;transition:opacity 0.6s,visibility 0.6s}
+#loader.hide{opacity:0;visibility:hidden}
+.loader-ring{width:48px;height:48px;border:3px solid rgba(139,92,246,0.2);border-top-color:#8b5cf6;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-txt{font-size:0.85rem;font-weight:600;color:var(–muted);letter-spacing:0.1em;text-transform:uppercase}
 
-/* CURSOR GLOW */
-.glow{position:fixed;width:500px;height:500px;background:radial-gradient(circle,rgba(139,92,246,0.07) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left 0.4s ease,top 0.4s ease}
+/* CURSOR */
+.cursor-glow{position:fixed;width:600px;height:600px;background:radial-gradient(circle,rgba(139,92,246,0.05) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:left 0.5s ease,top 0.5s ease}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 3rem;background:rgba(7,7,15,0.88);backdrop-filter:blur(24px);border-bottom:1px solid rgba(139,92,246,0.1)}
-.logo{font-weight:800;font-size:1.2rem;background:linear-gradient(135deg,#c4b5fd,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.nav-links{display:flex;gap:2rem;align-items:center}
-.nav-links a{color:rgba(240,238,255,0.55);text-decoration:none;font-size:0.82rem;font-weight:500;transition:color 0.2s}
-.nav-links a:hover{color:#f0eeff}
-.nav-cta{background:linear-gradient(135deg,#8b5cf6,#6366f1)!important;color:#fff!important;padding:0.5rem 1.2rem!important;border-radius:8px!important;font-weight:600!important}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:1rem 4rem;display:flex;align-items:center;justify-content:space-between;background:rgba(6,6,14,0.9);backdrop-filter:blur(30px);border-bottom:1px solid rgba(139,92,246,0.08);transition:padding 0.3s}
+.logo{font-weight:800;font-size:1.3rem;letter-spacing:-0.02em;background:linear-gradient(135deg,#c4b5fd,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-menu{display:flex;align-items:center;gap:0.5rem}
+.nav-menu a{color:rgba(240,238,255,0.55);text-decoration:none;font-size:0.82rem;font-weight:500;padding:0.4rem 0.8rem;border-radius:8px;transition:all 0.2s}
+.nav-menu a:hover{color:var(–text);background:rgba(255,255,255,0.05)}
+.nav-cta{background:linear-gradient(135deg,var(–purple),var(–blue))!important;color:#fff!important;padding:0.5rem 1.3rem!important;font-weight:700!important;box-shadow:0 0 20px rgba(139,92,246,0.3)!important}
+.nav-cta:hover{opacity:0.9;transform:translateY(-1px)}
 
 /* HERO */
-.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:9rem 3rem 5rem;position:relative;overflow:hidden}
-.blob{position:absolute;border-radius:50%;pointer-events:none}
-.blob1{width:700px;height:700px;background:radial-gradient(circle,rgba(139,92,246,0.12) 0%,transparent 65%);top:-200px;right:-200px}
-.blob2{width:400px;height:400px;background:radial-gradient(circle,rgba(99,102,241,0.08) 0%,transparent 65%);bottom:-100px;left:-100px}
-.eyebrow{display:inline-flex;align-items:center;gap:0.6rem;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:#c4b5fd;padding:0.4rem 1rem;border-radius:100px;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2rem;width:fit-content}
-.dot{width:6px;height:6px;background:#8b5cf6;border-radius:50%;animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-.hero h1{font-size:clamp(2.4rem,6vw,4.5rem);font-weight:800;line-height:1.08;letter-spacing:-0.03em;margin-bottom:1.5rem}
-.hero h1 em{font-style:normal;background:linear-gradient(135deg,#a78bfa 0%,#818cf8 50%,#67e8f9 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero-sub{font-size:1rem;line-height:1.75;color:rgba(240,238,255,0.58);max-width:520px;margin-bottom:2.5rem}
-.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:4rem}
-.btn-main{display:inline-flex;align-items:center;gap:0.5rem;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;padding:0.88rem 1.8rem;border-radius:12px;font-weight:700;font-size:0.88rem;text-decoration:none;transition:opacity 0.2s,transform 0.2s;box-shadow:0 0 30px rgba(139,92,246,0.3)}
-.btn-main:hover{opacity:0.88;transform:translateY(-2px)}
-.btn-ghost{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#f0eeff;padding:0.88rem 1.8rem;border-radius:12px;font-size:0.88rem;font-weight:500;text-decoration:none;transition:background 0.2s,transform 0.2s}
-.btn-ghost:hover{background:rgba(255,255,255,0.08);transform:translateY(-2px)}
-.stats-bar{display:flex;border:1px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden;background:rgba(255,255,255,0.02);max-width:580px}
-.stat-item{flex:1;padding:1.2rem 1.5rem;border-right:1px solid rgba(255,255,255,0.07)}
-.stat-item:last-child{border-right:none}
-.stat-val{font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#c4b5fd,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.2rem}
-.stat-lbl{font-size:0.7rem;color:rgba(240,238,255,0.4);font-weight:500}
+.hero{min-height:100vh;display:flex;align-items:center;padding:8rem 4rem 5rem;position:relative;overflow:hidden}
+.hero-content{max-width:700px;position:relative;z-index:2}
+.hero-visual{position:absolute;right:-100px;top:50%;transform:translateY(-50%);width:600px;height:600px;pointer-events:none;z-index:1}
+.hero-ring{position:absolute;border-radius:50%;border:1px solid rgba(139,92,246,0.15);animation:rotring 20s linear infinite}
+.hr1{width:400px;height:400px;top:50%;left:50%;transform:translate(-50%,-50%);animation-duration:25s}
+.hr2{width:550px;height:550px;top:50%;left:50%;transform:translate(-50%,-50%);border-color:rgba(99,102,241,0.1);animation-direction:reverse;animation-duration:35s}
+.hr3{width:250px;height:250px;top:50%;left:50%;transform:translate(-50%,-50%);border-color:rgba(34,211,238,0.12);animation-duration:15s}
+@keyframes rotring{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.hero-dot{position:absolute;border-radius:50%;animation:float 6s ease-in-out infinite}
+.hd1{width:8px;height:8px;background:#8b5cf6;top:20%;left:60%;animation-delay:0s}
+.hd2{width:5px;height:5px;background:#22d3ee;top:70%;left:80%;animation-delay:2s}
+.hd3{width:6px;height:6px;background:#10b981;top:40%;left:85%;animation-delay:4s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+.gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+.orb1{width:400px;height:400px;background:rgba(139,92,246,0.15);top:-100px;right:-100px}
+.orb2{width:300px;height:300px;background:rgba(34,211,238,0.06);bottom:0;left:50%}
+.badge{display:inline-flex;align-items:center;gap:0.6rem;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:#c4b5fd;padding:0.4rem 1rem;border-radius:100px;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2rem}
+.pulse{width:6px;height:6px;background:#8b5cf6;border-radius:50%;animation:pulseani 2s infinite}
+@keyframes pulseani{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+.hero h1{font-size:clamp(2.8rem,6.5vw,5rem);font-weight:800;line-height:1.05;letter-spacing:-0.04em;margin-bottom:1.5rem}
+.hero h1 .word-grad{background:linear-gradient(135deg,#a78bfa,#818cf8,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:1.05rem;line-height:1.8;color:var(–muted);max-width:520px;margin-bottom:2.5rem}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:3.5rem}
+.btn-prim{display:inline-flex;align-items:center;gap:0.5rem;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;padding:0.9rem 2rem;border-radius:14px;font-weight:700;font-size:0.9rem;text-decoration:none;transition:all 0.2s;box-shadow:0 0 40px rgba(139,92,246,0.35)}
+.btn-prim:hover{transform:translateY(-3px);box-shadow:0 10px 40px rgba(139,92,246,0.4)}
+.btn-sec{display:inline-flex;align-items:center;gap:0.5rem;border:1px solid rgba(255,255,255,0.12);color:var(–text);padding:0.9rem 2rem;border-radius:14px;font-size:0.9rem;font-weight:500;text-decoration:none;transition:all 0.2s;background:rgba(255,255,255,0.03)}
+.btn-sec:hover{border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.06);transform:translateY(-2px)}
+.hero-stats{display:flex;gap:0;background:var(–card);border:1px solid var(–border);border-radius:16px;overflow:hidden;width:fit-content}
+.hs{padding:1rem 1.8rem;border-right:1px solid var(–border)}
+.hs:last-child{border-right:none}
+.hs-val{font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#c4b5fd,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2}
+.hs-lbl{font-size:0.68rem;color:rgba(240,238,255,0.38);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-top:0.2rem}
 
-/* TICKER */
-.ticker{overflow:hidden;padding:0.85rem 0;border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(139,92,246,0.03)}
-.ticker-track{display:flex;gap:2rem;animation:tick 30s linear infinite;white-space:nowrap}
-.ticker-track span{font-size:0.73rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,238,255,0.27)}
-.ticker-track .sep{color:#8b5cf6}
-@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+/* MARQUEE */
+.marquee{overflow:hidden;padding:0.9rem 0;background:rgba(139,92,246,0.04);border-top:1px solid rgba(139,92,246,0.08);border-bottom:1px solid rgba(139,92,246,0.08)}
+.mq-track{display:flex;gap:0;animation:mq 35s linear infinite;white-space:nowrap}
+.mq-item{display:flex;align-items:center;gap:1.5rem;padding:0 1.5rem}
+.mq-item span{font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,238,255,0.25)}
+.mq-sep{color:#8b5cf6;font-size:0.7rem}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-/* SECTIONS */
-.sec{padding:6rem 3rem;position:relative}
-.sec-alt{background:linear-gradient(180deg,#07070f 0%,#0c0b1a 50%,#07070f 100%)}
-.tag{display:inline-flex;align-items:center;gap:0.5rem;color:#a78bfa;font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.9rem}
-.tag::before{content:’’;width:16px;height:1px;background:#8b5cf6}
-.h2{font-size:clamp(1.9rem,4vw,3rem);font-weight:800;letter-spacing:-0.025em;line-height:1.12;margin-bottom:0.9rem}
-.h2 span{background:linear-gradient(135deg,#a78bfa,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sub{color:rgba(240,238,255,0.52);font-size:0.92rem;line-height:1.75;max-width:500px;margin-bottom:3rem}
+/* SECTION */
+.s{padding:7rem 4rem;position:relative}
+.s-dark{background:var(–bg2)}
+.s-inner{max-width:1200px;margin:0 auto}
+.s-label{display:inline-flex;align-items:center;gap:0.5rem;font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#a78bfa;margin-bottom:1rem}
+.s-label::before{content:’’;width:18px;height:1.5px;background:linear-gradient(90deg,#8b5cf6,transparent)}
+.s-title{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1rem}
+.s-title .g{background:linear-gradient(135deg,#a78bfa,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.s-desc{font-size:0.95rem;line-height:1.8;color:var(–muted);max-width:520px;margin-bottom:3.5rem}
 
-/* SERVICES */
-.srv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
-.srv-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:18px;padding:1.8rem;transition:border-color 0.3s,transform 0.3s;position:relative;overflow:hidden}
-.srv-card::before{content:’’;position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#8b5cf6,#818cf8);opacity:0;transition:opacity 0.3s}
-.srv-card:hover{border-color:rgba(139,92,246,0.35);transform:translateY(-4px)}
-.srv-card:hover::before{opacity:1}
-.srv-ico{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(99,102,241,0.15));display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:1.1rem}
-.srv-name{font-size:0.95rem;font-weight:700;margin-bottom:0.35rem}
-.srv-who{font-size:0.72rem;color:#a78bfa;font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.06em}
-.srv-txt{font-size:0.8rem;line-height:1.65;color:rgba(240,238,255,0.52)}
-
-/* CREDIBILITY */
-.cred-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:4rem}
-.cred-num{text-align:center;padding:2rem;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:18px}
-.cred-big{font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,#c4b5fd,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.4rem}
-.cred-txt{font-size:0.82rem;color:rgba(240,238,255,0.55)}
+/* NUMBERS */
+.nums{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(–border);border:1px solid var(–border);border-radius:20px;overflow:hidden;margin-bottom:5rem}
+.num-item{background:var(–bg);padding:2rem;text-align:center;transition:background 0.3s}
+.num-item:hover{background:rgba(139,92,246,0.05)}
+.num-val{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#c4b5fd,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.4rem}
+.num-lbl{font-size:0.78rem;color:var(–muted);font-weight:500}
 
 /* AVIS */
-.avis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
-.avis-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:18px;padding:1.6rem}
-.stars{color:#f59e0b;font-size:0.85rem;margin-bottom:0.8rem;letter-spacing:2px}
-.avis-txt{font-size:0.83rem;line-height:1.65;color:rgba(240,238,255,0.68);margin-bottom:1rem;font-style:italic}
-.avis-author{display:flex;align-items:center;gap:0.7rem}
-.avis-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0}
-.av1{background:linear-gradient(135deg,#8b5cf6,#6366f1)}
-.av2{background:linear-gradient(135deg,#06b6d4,#3b82f6)}
-.av3{background:linear-gradient(135deg,#10b981,#059669)}
-.avis-name{font-size:0.82rem;font-weight:700}
-.avis-role{font-size:0.72rem;color:rgba(240,238,255,0.42)}
+.avis-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.avis-card{background:var(–card);border:1px solid var(–border);border-radius:20px;padding:1.8rem;transition:border-color 0.3s,transform 0.3s}
+.avis-card:hover{border-color:rgba(139,92,246,0.3);transform:translateY(-4px)}
+.avis-stars{display:flex;gap:2px;margin-bottom:1rem}
+.star{color:#f59e0b;font-size:0.9rem}
+.avis-quote{font-size:0.85rem;line-height:1.7;color:rgba(240,238,255,0.7);font-style:italic;margin-bottom:1.2rem}
+.avis-author{display:flex;align-items:center;gap:0.8rem}
+.av-pic{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0}
+.av-a{background:linear-gradient(135deg,#8b5cf6,#6366f1)}
+.av-b{background:linear-gradient(135deg,#0891b2,#3b82f6)}
+.av-c{background:linear-gradient(135deg,#059669,#10b981)}
+.av-name{font-size:0.85rem;font-weight:700;line-height:1.2}
+.av-role{font-size:0.72rem;color:rgba(240,238,255,0.4)}
+
+/* SERVICES */
+.srv-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+.srv{background:var(–card);border:1px solid var(–border);border-radius:20px;padding:2rem;transition:all 0.3s;position:relative;overflow:hidden}
+.srv::after{content:’’;position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#8b5cf6,#22d3ee);opacity:0;transition:opacity 0.3s}
+.srv:hover{border-color:rgba(139,92,246,0.4);transform:translateY(-5px);background:rgba(139,92,246,0.04)}
+.srv:hover::after{opacity:1}
+.srv-icon{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(99,102,241,0.15));display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1.2rem}
+.srv-title{font-size:1rem;font-weight:700;margin-bottom:0.3rem}
+.srv-for{font-size:0.7rem;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.6rem}
+.srv-desc{font-size:0.8rem;line-height:1.65;color:var(–muted)}
 
 /* PORTFOLIO */
-.portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
-.port-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:18px;overflow:hidden;transition:transform 0.3s,border-color 0.3s}
-.port-card:hover{transform:translateY(-5px);border-color:rgba(139,92,246,0.35)}
-.port-img{height:160px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden}
-.port-img::after{content:’’;position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(7,7,15,0.7))}
-.pi1{background:linear-gradient(135deg,#1e1b4b,#312e81)}
-.pi2{background:linear-gradient(135deg,#0c4a6e,#075985)}
-.pi3{background:linear-gradient(135deg,#064e3b,#065f46)}
-.port-body{padding:1.4rem}
-.port-tag{font-size:0.65rem;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.4rem}
-.port-name{font-size:0.95rem;font-weight:700;margin-bottom:0.4rem}
-.port-desc{font-size:0.78rem;color:rgba(240,238,255,0.52);line-height:1.6;margin-bottom:0.8rem}
-.port-result{display:inline-flex;align-items:center;gap:0.4rem;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);color:#34d399;padding:0.25rem 0.7rem;border-radius:100px;font-size:0.7rem;font-weight:600}
+.port-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.port{background:var(–card);border:1px solid var(–border);border-radius:20px;overflow:hidden;transition:all 0.3s}
+.port:hover{transform:translateY(-6px);border-color:rgba(139,92,246,0.35);box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.port-thumb{height:180px;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative}
+.pt-1{background:linear-gradient(135deg,#1e1b4b,#4c1d95)}
+.pt-2{background:linear-gradient(135deg,#0c4a6e,#1e40af)}
+.pt-3{background:linear-gradient(135deg,#052e16,#065f46)}
+.port-body{padding:1.5rem}
+.port-cat{font-size:0.65rem;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.4rem}
+.port-title{font-size:1rem;font-weight:700;margin-bottom:0.5rem}
+.port-desc{font-size:0.78rem;line-height:1.6;color:var(–muted);margin-bottom:1rem}
+.port-kpi{display:inline-flex;align-items:center;gap:0.4rem;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#34d399;padding:0.25rem 0.75rem;border-radius:100px;font-size:0.68rem;font-weight:700}
 
 /* ABOUT */
-.about-wrap{display:grid;grid-template-columns:1fr 1.5fr;gap:4rem;align-items:center}
-.about-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:2.5rem;text-align:center}
-.about-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
-.about-name{font-size:1.1rem;font-weight:800;margin-bottom:0.2rem}
-.about-role{font-size:0.78rem;color:#a78bfa;font-weight:600;margin-bottom:1rem}
-.about-badges{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center}
-.badge{background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.2);color:#c4b5fd;padding:0.25rem 0.7rem;border-radius:100px;font-size:0.68rem;font-weight:600}
-.about-txt{font-size:0.92rem;line-height:1.8;color:rgba(240,238,255,0.65)}
-.about-txt strong{color:#f0eeff}
-.process{display:flex;flex-direction:column;gap:1rem;margin-top:1.5rem}
-.proc-step{display:flex;align-items:flex-start;gap:1rem}
-.proc-num{width:32px;height:32px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:800;flex-shrink:0}
-.proc-name{font-size:0.88rem;font-weight:700;margin-bottom:0.2rem}
-.proc-txt{font-size:0.78rem;color:rgba(240,238,255,0.5)}
+.about-grid{display:grid;grid-template-columns:380px 1fr;gap:5rem;align-items:center}
+.about-profile{background:var(–card);border:1px solid var(–border);border-radius:24px;padding:2.5rem;text-align:center}
+.profile-avatar{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1.2rem;box-shadow:0 0 30px rgba(139,92,246,0.4)}
+.profile-name{font-size:1.3rem;font-weight:800;margin-bottom:0.3rem}
+.profile-role{font-size:0.8rem;color:#a78bfa;font-weight:600;margin-bottom:1.2rem}
+.profile-skills{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin-bottom:1.5rem}
+.skill{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:#c4b5fd;padding:0.3rem 0.8rem;border-radius:100px;font-size:0.68rem;font-weight:700}
+.profile-since{font-size:0.78rem;color:var(–muted);margin-top:1rem;padding-top:1rem;border-top:1px solid var(–border)}
+.about-text{font-size:0.95rem;line-height:1.85;color:rgba(240,238,255,0.68)}
+.about-text strong{color:var(–text)}
+.about-text p+p{margin-top:1rem}
+.steps{display:flex;flex-direction:column;gap:1.2rem;margin-top:2rem}
+.step{display:flex;align-items:flex-start;gap:1.2rem;padding:1.2rem;background:var(–card);border:1px solid var(–border);border-radius:14px;transition:border-color 0.3s}
+.step:hover{border-color:rgba(139,92,246,0.3)}
+.step-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0}
+.step-title{font-size:0.9rem;font-weight:700;margin-bottom:0.2rem}
+.step-desc{font-size:0.78rem;color:var(–muted);line-height:1.55}
 
 /* PRICING */
-.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:2.5rem}
-.price-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:22px;padding:2rem;position:relative;transition:transform 0.3s,border-color 0.3s}
-.price-card:hover{transform:translateY(-6px);border-color:rgba(139,92,246,0.3)}
-.price-card.hot{background:linear-gradient(145deg,rgba(139,92,246,0.1),rgba(99,102,241,0.06));border-color:rgba(139,92,246,0.4);box-shadow:0 0 40px rgba(139,92,246,0.1)}
-.hot-tag{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.22rem 0.9rem;border-radius:0 0 9px 9px}
-.p-tier{font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(240,238,255,0.4);margin-bottom:0.9rem}
-.p-price{font-size:3rem;font-weight:800;line-height:1;background:linear-gradient(135deg,#f0eeff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.2rem}
-.p-price sup{font-size:1.3rem}
-.p-period{font-size:0.7rem;color:rgba(240,238,255,0.3);margin-bottom:1.4rem}
-.p-line{height:1px;background:rgba(255,255,255,0.06);margin-bottom:1.2rem}
-.p-feats{list-style:none;display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.8rem}
-.p-feats li{font-size:0.8rem;color:rgba(240,238,255,0.68);display:flex;align-items:center;gap:0.55rem}
-.p-feats li::before{content:‘✓’;color:#a78bfa;font-size:0.68rem;font-weight:700;flex-shrink:0}
-.p-btn{display:block;width:100%;padding:0.82rem;text-align:center;border-radius:11px;font-size:0.83rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,0.1);color:#f0eeff;background:rgba(255,255,255,0.05);transition:background 0.2s;cursor:pointer}
-.p-btn:hover{background:rgba(255,255,255,0.09)}
-.p-btn.cta{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border-color:transparent;box-shadow:0 4px 20px rgba(139,92,246,0.3)}
-.p-btn.cta:hover{opacity:0.88}
+.price-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+.pc{background:var(–card);border:1px solid var(–border);border-radius:24px;padding:2.2rem;position:relative;transition:all 0.3s}
+.pc:hover{transform:translateY(-8px)}
+.pc.best{background:linear-gradient(145deg,rgba(139,92,246,0.1),rgba(99,102,241,0.06));border-color:rgba(139,92,246,0.45);box-shadow:0 0 60px rgba(139,92,246,0.12)}
+.pc-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:0.6rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:0.25rem 1rem;border-radius:0 0 10px 10px;white-space:nowrap}
+.pc-name{font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(240,238,255,0.4);margin-bottom:1rem}
+.pc-price{font-size:3.2rem;font-weight:800;line-height:1;background:linear-gradient(135deg,#f0eeff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.2rem}
+.pc-price sup{font-size:1.4rem}
+.pc-note{font-size:0.7rem;color:rgba(240,238,255,0.28);margin-bottom:1.5rem}
+.pc-div{height:1px;background:var(–border);margin-bottom:1.3rem}
+.pc-feats{list-style:none;display:flex;flex-direction:column;gap:0.65rem;margin-bottom:2rem}
+.pc-feats li{font-size:0.8rem;color:rgba(240,238,255,0.68);display:flex;align-items:center;gap:0.6rem}
+.pc-feats li::before{content:‘✓’;color:#a78bfa;font-weight:800;font-size:0.7rem;flex-shrink:0}
+.pc-btn{display:block;width:100%;padding:0.88rem;text-align:center;border-radius:12px;font-size:0.85rem;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,0.1);color:var(–text);background:rgba(255,255,255,0.05);transition:all 0.2s;cursor:pointer}
+.pc-btn:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.18)}
+.pc-btn.go{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border-color:transparent;box-shadow:0 6px 25px rgba(139,92,246,0.35)}
+.pc-btn.go:hover{opacity:0.88;transform:translateY(-1px)}
 
 /* CONTACT */
-.contact-wrap{display:grid;grid-template-columns:1fr 1.2fr;gap:4rem;align-items:start}
-.c-infos{display:flex;flex-direction:column;gap:0.8rem;margin-top:1.5rem}
-.c-row{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);font-size:0.82rem;color:rgba(240,238,255,0.65)}
-.c-row strong{color:#f0eeff}
-.c-ico{width:30px;height:30px;flex-shrink:0;background:linear-gradient(135deg,rgba(139,92,246,0.18),rgba(99,102,241,0.12));border-radius:8px;display:flex;align-items:center;justify-content:center}
-.guarantee{background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:14px;padding:1.2rem;margin-top:1rem;display:flex;gap:0.8rem;align-items:flex-start}
-.g-ico{font-size:1.2rem;flex-shrink:0}
-.g-title{font-size:0.85rem;font-weight:700;color:#34d399;margin-bottom:0.2rem}
-.g-txt{font-size:0.78rem;color:rgba(240,238,255,0.52);line-height:1.6}
+.contact-grid{display:grid;grid-template-columns:1fr 1.3fr;gap:5rem;align-items:start}
+.contact-left p{font-size:0.92rem;line-height:1.8;color:var(–muted);margin-bottom:1.5rem}
+.c-cards{display:flex;flex-direction:column;gap:0.8rem;margin-bottom:1.5rem}
+.c-card{display:flex;align-items:center;gap:0.9rem;padding:0.9rem 1.1rem;background:var(–card);border:1px solid var(–border);border-radius:14px;font-size:0.83rem;color:rgba(240,238,255,0.65);transition:border-color 0.2s}
+.c-card:hover{border-color:rgba(139,92,246,0.3)}
+.c-card strong{color:var(–text)}
+.c-icon{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(99,102,241,0.15));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.guarantee-box{background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.18);border-radius:14px;padding:1.2rem;display:flex;gap:0.9rem}
+.g-ico{font-size:1.3rem;flex-shrink:0}
+.g-title{font-size:0.85rem;font-weight:700;color:#34d399;margin-bottom:0.3rem}
+.g-text{font-size:0.78rem;color:var(–muted);line-height:1.6}
 
 /* FORM */
-.form{display:flex;flex-direction:column;gap:0.9rem}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem}
-.field{display:flex;flex-direction:column;gap:0.35rem}
-.field label{font-size:0.67rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(240,238,255,0.38);font-weight:600}
-.field input,.field select,.field textarea{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#f0eeff;padding:0.78rem 0.95rem;font-family:‘Plus Jakarta Sans’,sans-serif;font-size:0.85rem;outline:none;border-radius:11px;transition:border-color 0.2s,background 0.2s}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(139,92,246,0.5);background:rgba(139,92,246,0.04)}
-.field textarea{resize:none;min-height:100px}
+.form-wrap{background:var(–card);border:1px solid var(–border);border-radius:24px;padding:2.2rem}
+.form-title{font-size:1.1rem;font-weight:800;margin-bottom:1.5rem}
+.form{display:flex;flex-direction:column;gap:1rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.field{display:flex;flex-direction:column;gap:0.4rem}
+.field label{font-size:0.67rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(240,238,255,0.35)}
+.field input,.field select,.field textarea{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(–text);padding:0.8rem 1rem;font-family:‘Plus Jakarta Sans’,sans-serif;font-size:0.85rem;outline:none;border-radius:12px;transition:all 0.2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(139,92,246,0.5);background:rgba(139,92,246,0.04);box-shadow:0 0 0 3px rgba(139,92,246,0.08)}
+.field textarea{resize:none;min-height:110px}
 .field select{appearance:none}
 .field select option{background:#0f0e1f}
-.sub-btn{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;padding:0.9rem 2rem;font-family:‘Plus Jakarta Sans’,sans-serif;font-weight:700;font-size:0.88rem;border-radius:11px;cursor:pointer;transition:opacity 0.2s,transform 0.2s;display:flex;align-items:center;justify-content:center;gap:0.6rem;box-shadow:0 4px 20px rgba(139,92,246,0.3)}
-.sub-btn:hover{opacity:0.88;transform:translateY(-2px)}
-.ok-msg{display:none;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.3);color:#34d399;padding:0.9rem 1.1rem;border-radius:11px;font-size:0.85rem}
+.submit{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;padding:1rem 2rem;font-family:‘Plus Jakarta Sans’,sans-serif;font-weight:700;font-size:0.9rem;border-radius:12px;cursor:pointer;width:100%;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.6rem;box-shadow:0 6px 25px rgba(139,92,246,0.35)}
+.submit:hover{opacity:0.88;transform:translateY(-2px)}
+.ok{display:none;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);color:#34d399;padding:1rem;border-radius:12px;font-size:0.85rem;text-align:center;margin-top:0.5rem}
 
-/* LEGAL */
-.legal{padding:2rem 3rem;border-top:1px solid rgba(255,255,255,0.04);background:rgba(0,0,0,0.2)}
-.legal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-bottom:1.5rem}
-.legal-title{font-size:0.72rem;font-weight:700;color:rgba(240,238,255,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem}
-.legal-txt{font-size:0.72rem;color:rgba(240,238,255,0.28);line-height:1.6}
-.legal-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.04)}
+/* FAQ */
+.faq-wrap{display:flex;flex-direction:column;gap:0.8rem;max-width:700px;margin:0 auto}
+.faq-item{background:var(–card);border:1px solid var(–border);border-radius:16px;overflow:hidden;transition:border-color 0.2s}
+.faq-item:hover{border-color:rgba(139,92,246,0.3)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;cursor:pointer;font-size:0.9rem;font-weight:600;gap:1rem}
+.faq-ico{width:24px;height:24px;border-radius:6px;background:rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.3s;font-size:0.7rem}
+.faq-item.open .faq-ico{transform:rotate(45deg);background:rgba(139,92,246,0.3)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height 0.3s ease,padding 0.3s}
+.faq-a-inner{padding:0 1.5rem 1.2rem;font-size:0.83rem;line-height:1.7;color:var(–muted)}
+.faq-item.open .faq-a{max-height:200px}
 
-/* FOOTER */
-footer{border-top:1px solid rgba(255,255,255,0.05);padding:1.8rem 3rem;display:flex;align-items:center;justify-content:space-between}
-.ft-logo{font-weight:800;font-size:1.1rem;background:linear-gradient(135deg,#c4b5fd,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-footer p{font-size:0.73rem;color:rgba(240,238,255,0.27)}
+/* FOOTER / LEGAL */
+.footer-top{background:rgba(139,92,246,0.04);border-top:1px solid rgba(139,92,246,0.1);padding:4rem;display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:3rem}
+.ft-brand .logo{display:block;margin-bottom:1rem;font-size:1.4rem}
+.ft-brand p{font-size:0.8rem;line-height:1.7;color:var(–muted);max-width:240px}
+.ft-col-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(240,238,255,0.38);margin-bottom:1rem}
+.ft-links{display:flex;flex-direction:column;gap:0.5rem}
+.ft-links a{color:rgba(240,238,255,0.52);text-decoration:none;font-size:0.82rem;transition:color 0.2s}
+.ft-links a:hover{color:var(–text)}
+.footer-bot{border-top:1px solid var(–border);padding:1.5rem 4rem;display:flex;align-items:center;justify-content:space-between}
+.footer-bot p{font-size:0.72rem;color:rgba(240,238,255,0.25)}
 
-/* ANIMATIONS */
-.fade{opacity:0;transform:translateY(22px);transition:opacity 0.65s ease,transform 0.65s ease}
-.fade.in{opacity:1;transform:translateY(0)}
+/* LEGAL MODAL PLACEHOLDER */
+.legal-note{font-size:0.72rem;color:rgba(240,238,255,0.22);text-align:center;padding:1rem 4rem;background:rgba(0,0,0,0.2)}
 
-@media(max-width:900px){
+/* ANIM */
+.fade{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease}
+.fade.in{opacity:1;transform:none}
+.fade-l{opacity:0;transform:translateX(-24px);transition:opacity 0.7s ease,transform 0.7s ease}
+.fade-l.in{opacity:1;transform:none}
+.fade-r{opacity:0;transform:translateX(24px);transition:opacity 0.7s ease,transform 0.7s ease}
+.fade-r.in{opacity:1;transform:none}
+
+/* RESPONSIVE */
+@media(max-width:1100px){
+.hero{flex-direction:column;padding:8rem 2rem 4rem}
+.hero-visual{display:none}
+.about-grid{grid-template-columns:1fr;gap:3rem}
+.footer-top{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
 nav{padding:1rem 1.5rem}
-.nav-links{display:none}
+.nav-menu{display:none}
+.s{padding:4rem 1.5rem}
 .hero{padding:7rem 1.5rem 3rem}
-.sec{padding:3.5rem 1.5rem}
-.srv-grid,.price-grid,.avis-grid,.portfolio-grid,.cred-grid,.legal-grid{grid-template-columns:1fr}
-.about-wrap,.contact-wrap{grid-template-columns:1fr;gap:2.5rem}
+.hero h1{font-size:2.2rem}
+.nums,.avis-wrap,.srv-wrap,.port-wrap,.price-wrap{grid-template-columns:1fr}
+.contact-grid{grid-template-columns:1fr}
+.footer-top{grid-template-columns:1fr;padding:2.5rem 1.5rem}
+.footer-bot{flex-direction:column;gap:0.5rem;padding:1.2rem 1.5rem;text-align:center}
+.hero-stats{flex-direction:column;width:100%}
+.hs{border-right:none;border-bottom:1px solid var(–border)}
+.hs:last-child{border-bottom:none}
 .form-row{grid-template-columns:1fr}
-.stats-bar{flex-direction:row}
-footer,.legal-bottom{flex-direction:column;gap:0.8rem;text-align:center}
 }
 </style>
 
 </head>
 <body>
 
-<!-- LOADER -->
-
-<div id="loader"><div class="loader-logo">WebCraft</div></div>
-
-<div class="glow" id="gc"></div>
+<div id="loader"><div class="loader-ring"></div><div class="loader-txt">WebCraft</div></div>
+<div class="cursor-glow" id="cg"></div>
 
 <!-- NAV -->
 
 <nav>
   <div class="logo">WebCraft</div>
-  <div class="nav-links">
+  <div class="nav-menu">
     <a href="#services">Services</a>
     <a href="#portfolio">Portfolio</a>
     <a href="#avis">Avis</a>
     <a href="#tarifs">Tarifs</a>
+    <a href="#faq">FAQ</a>
     <a href="#about">A propos</a>
-    <a href="#contact" class="nav-cta">Devis gratuit</a>
+    <a href="#contact" class="nav-cta">Devis gratuit →</a>
   </div>
 </nav>
 
 <!-- HERO -->
 
 <section class="hero">
-  <div class="blob blob1"></div>
-  <div class="blob blob2"></div>
-  <div class="eyebrow"><div class="dot"></div>Agence Web Freelance — France</div>
-  <h1>Votre entreprise<br>merite un site web<br><em>qui convertit.</em></h1>
-  <p class="hero-sub">Je cree des sites web modernes, rapides et optimises pour Google. Livraison en 5 jours, prix transparent, resultat professionnel garanti.</p>
-  <div class="hero-btns">
-    <a href="#contact" class="btn-main">Demander un devis gratuit <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
-    <a href="#portfolio" class="btn-ghost">Voir nos projets</a>
+  <div class="gradient-orb orb1"></div>
+  <div class="gradient-orb orb2"></div>
+  <div class="hero-content">
+    <div class="badge"><div class="pulse"></div>Agence Web — France 🇫🇷</div>
+    <h1>Votre site web<br>professionnel,<br><span class="word-grad">livré en 5 jours.</span></h1>
+    <p class="hero-sub">Je cree des sites web modernes, rapides et visibles sur Google pour les entreprises qui veulent se developper en ligne. Design premium, prix transparent, satisfaction garantie.</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-prim">Demander un devis gratuit <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
+      <a href="#portfolio" class="btn-sec">Voir nos realisations</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hs"><div class="hs-val">30+</div><div class="hs-lbl">Sites livres</div></div>
+      <div class="hs"><div class="hs-val">5j</div><div class="hs-lbl">Delai garanti</div></div>
+      <div class="hs"><div class="hs-val">100%</div><div class="hs-lbl">Satisfaits</div></div>
+      <div class="hs"><div class="hs-val">29€</div><div class="hs-lbl">Prix de depart</div></div>
+    </div>
   </div>
-  <div class="stats-bar">
-    <div class="stat-item"><div class="stat-val">5j</div><div class="stat-lbl">Delai moyen</div></div>
-    <div class="stat-item"><div class="stat-val">30+</div><div class="stat-lbl">Sites realises</div></div>
-    <div class="stat-item"><div class="stat-val">dès 29€</div><div class="stat-lbl">Sans abonnement</div></div>
+  <div class="hero-visual">
+    <div class="hero-ring hr1"></div>
+    <div class="hero-ring hr2"></div>
+    <div class="hero-ring hr3"></div>
+    <div class="hero-dot hd1"></div>
+    <div class="hero-dot hd2"></div>
+    <div class="hero-dot hd3"></div>
   </div>
 </section>
 
-<!-- TICKER -->
+<!-- MARQUEE -->
 
-<div class="ticker">
-  <div class="ticker-track">
-    <span>Sites Vitrines</span><span class="sep"> ✦ </span><span>E-Commerce</span><span class="sep"> ✦ </span><span>Restaurants</span><span class="sep"> ✦ </span><span>Artisans</span><span class="sep"> ✦ </span><span>Coiffeurs</span><span class="sep"> ✦ </span><span>Médecins</span><span class="sep"> ✦ </span><span>Boutiques</span><span class="sep"> ✦ </span><span>PME</span><span class="sep"> ✦ </span><span>Associations</span><span class="sep"> ✦ </span>
-    <span>Sites Vitrines</span><span class="sep"> ✦ </span><span>E-Commerce</span><span class="sep"> ✦ </span><span>Restaurants</span><span class="sep"> ✦ </span><span>Artisans</span><span class="sep"> ✦ </span><span>Coiffeurs</span><span class="sep"> ✦ </span><span>Médecins</span><span class="sep"> ✦ </span><span>Boutiques</span><span class="sep"> ✦ </span><span>PME</span><span class="sep"> ✦ </span><span>Associations</span><span class="sep"> ✦ </span>
+<div class="marquee">
+  <div class="mq-track">
+    <div class="mq-item"><span>Sites Vitrines</span><span class="mq-sep">✦</span><span>E-Commerce</span><span class="mq-sep">✦</span><span>Restaurants</span><span class="mq-sep">✦</span><span>Artisans</span><span class="mq-sep">✦</span><span>Coiffeurs</span><span class="mq-sep">✦</span><span>Médecins</span><span class="mq-sep">✦</span><span>Boutiques</span><span class="mq-sep">✦</span><span>PME</span><span class="mq-sep">✦</span><span>Associations</span><span class="mq-sep">✦</span><span>Avocats</span><span class="mq-sep">✦</span><span>Architectes</span><span class="mq-sep">✦</span><span>Coaches</span><span class="mq-sep">✦</span></div>
+    <div class="mq-item"><span>Sites Vitrines</span><span class="mq-sep">✦</span><span>E-Commerce</span><span class="mq-sep">✦</span><span>Restaurants</span><span class="mq-sep">✦</span><span>Artisans</span><span class="mq-sep">✦</span><span>Coiffeurs</span><span class="mq-sep">✦</span><span>Médecins</span><span class="mq-sep">✦</span><span>Boutiques</span><span class="mq-sep">✦</span><span>PME</span><span class="mq-sep">✦</span><span>Associations</span><span class="mq-sep">✦</span><span>Avocats</span><span class="mq-sep">✦</span><span>Architectes</span><span class="mq-sep">✦</span><span>Coaches</span><span class="mq-sep">✦</span></div>
   </div>
 </div>
 
-<!-- CREDIBILITE -->
+<!-- CHIFFRES + AVIS -->
 
-<section class="sec sec-alt">
-  <div class="tag">Nos chiffres</div>
-  <h2 class="h2">Des resultats <span>concrets</span></h2>
-  <div class="cred-grid">
-    <div class="cred-num fade"><div class="cred-big">30+</div><div class="cred-txt">Sites web livres avec succes</div></div>
-    <div class="cred-num fade"><div class="cred-big">+50%</div><div class="cred-txt">De trafic moyen gagne par nos clients</div></div>
-    <div class="cred-num fade"><div class="cred-big">5j</div><div class="cred-txt">Delai moyen de livraison garanti</div></div>
-  </div>
-
-  <!-- AVIS -->
-
-  <div id="avis">
-    <div class="tag">Avis clients</div>
-    <h2 class="h2">Ils nous font <span>confiance</span></h2>
-    <p class="sub">Des entrepreneurs satisfaits qui ont choisi WebCraft pour leur presence en ligne.</p>
-    <div class="avis-grid">
-      <div class="avis-card fade">
-        <div class="stars">★★★★★</div>
-        <p class="avis-txt">"Site livre en 4 jours, exactement ce que je voulais. Mon restaurant est maintenant visible sur Google et j'ai plus de reservations."</p>
-        <div class="avis-author"><div class="avis-avatar av1">M</div><div><div class="avis-name">Marie L.</div><div class="avis-role">Restauratrice, Lyon</div></div></div>
-      </div>
-      <div class="avis-card fade">
-        <div class="stars">★★★★★</div>
-        <p class="avis-txt">"Prix imbattable pour la qualite. Mon site artisan est pro, rapide et mes clients me trouvent facilement. Je recommande!"</p>
-        <div class="avis-author"><div class="avis-avatar av2">K</div><div><div class="avis-name">Kevin D.</div><div class="avis-role">Artisan plombier, Paris</div></div></div>
-      </div>
-      <div class="avis-card fade">
-        <div class="stars">★★★★★</div>
-        <p class="avis-txt">"Super service, tres a l'ecoute. Mon e-commerce fonctionne parfaitement, les commandes rentrent et le paiement est securise."</p>
-        <div class="avis-author"><div class="avis-avatar av3">S</div><div><div class="avis-name">Sofia B.</div><div class="avis-role">Boutique en ligne, Marseille</div></div></div>
-      </div>
+<section class="s s-dark" id="avis">
+  <div class="s-inner">
+    <div class="nums fade">
+      <div class="num-item"><div class="num-val">30+</div><div class="num-lbl">Sites web livres</div></div>
+      <div class="num-item"><div class="num-val">+50%</div><div class="num-lbl">Trafic moyen gagne</div></div>
+      <div class="num-item"><div class="num-val">5j</div><div class="num-lbl">Delai moyen</div></div>
+      <div class="num-item"><div class="num-val">100%</div><div class="num-lbl">Clients satisfaits</div></div>
+    </div>
+    <div class="s-label">Avis clients verifies</div>
+    <h2 class="s-title">Ils ont fait confiance<br>a <span class="g">WebCraft</span></h2>
+    <p class="s-desc">Des entrepreneurs de toute la France qui ont choisi WebCraft pour leur site web.</p>
+    <div class="avis-wrap">
+      <div class="avis-card fade"><div class="avis-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div><p class="avis-quote">"Site livre en 4 jours, exactement ce que je voulais. Mon restaurant est maintenant visible sur Google Maps et j'ai 30% de reservations en plus ce mois-ci."</p><div class="avis-author"><div class="av-pic av-a">M</div><div><div class="av-name">Marie L.</div><div class="av-role">Restauratrice — Lyon</div></div></div></div>
+      <div class="avis-card fade"><div class="avis-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div><p class="avis-quote">"Prix imbattable pour la qualite rendue. Mon site artisan est propre, rapide, et mes clients me trouvent en premiere page Google. Je recommande a 100%."</p><div class="avis-author"><div class="av-pic av-b">K</div><div><div class="av-name">Kevin D.</div><div class="av-role">Artisan plombier — Paris</div></div></div></div>
+      <div class="avis-card fade"><div class="avis-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div><p class="avis-quote">"Super service, tres a l'ecoute. Mon e-commerce fonctionne parfaitement, les commandes rentrent et le paiement securise rassure mes clients."</p><div class="avis-author"><div class="av-pic av-c">S</div><div><div class="av-name">Sofia B.</div><div class="av-role">Boutique en ligne — Marseille</div></div></div></div>
     </div>
   </div>
 </section>
 
 <!-- SERVICES -->
 
-<section class="sec" id="services">
-  <div class="tag">Services</div>
-  <h2 class="h2">Ce que je fais,<br><span>et pour qui</span></h2>
-  <p class="sub">Des solutions claires adaptees a votre activite. Chaque service inclut un resultat concret.</p>
-  <div class="srv-grid">
-    <div class="srv-card fade">
-      <div class="srv-ico">🖥️</div>
-      <div class="srv-name">Creation de site vitrine</div>
-      <div class="srv-who">Pour : artisans, professions liberales, restaurants</div>
-      <p class="srv-txt">Un site elegant qui presente votre activite, vos services et vos coordonnees. Design moderne, formulaire de contact, adapte mobile.</p>
-    </div>
-    <div class="srv-card fade">
-      <div class="srv-ico">🛍️</div>
-      <div class="srv-name">Boutique e-commerce</div>
-      <div class="srv-who">Pour : commercants, creatifs, PME</div>
-      <p class="srv-txt">Vendez vos produits 24h/24. Paiement CB securise, gestion des stocks, tableau de bord admin simple.</p>
-    </div>
-    <div class="srv-card fade">
-      <div class="srv-ico">📈</div>
-      <div class="srv-name">Optimisation SEO</div>
-      <div class="srv-who">Pour : tous les secteurs</div>
-      <p class="srv-txt">Apparaissez en tete sur Google. Optimisation technique, contenu cible, visibilite locale maximisee.</p>
-    </div>
-    <div class="srv-card fade">
-      <div class="srv-ico">🔄</div>
-      <div class="srv-name">Refonte de site</div>
-      <div class="srv-who">Pour : entreprises avec un vieux site</div>
-      <p class="srv-txt">Votre site est date ou ne convertit pas ? Je le modernise avec un design actuel et une meilleure experience utilisateur.</p>
-    </div>
-    <div class="srv-card fade">
-      <div class="srv-ico">📱</div>
-      <div class="srv-name">Design responsive</div>
-      <div class="srv-who">Pour : tous les projets</div>
-      <p class="srv-txt">Parfait sur mobile, tablette et ordinateur. 70% des visiteurs arrivent depuis un telephone — votre site doit etre impeccable.</p>
-    </div>
-    <div class="srv-card fade">
-      <div class="srv-ico">🛡️</div>
-      <div class="srv-name">Maintenance & support</div>
-      <div class="srv-who">Pour : apres la livraison</div>
-      <p class="srv-txt">Mises a jour, sauvegardes et securite. Votre site toujours en ligne, protege et performant.</p>
+<section class="s" id="services">
+  <div class="s-inner">
+    <div class="s-label">Nos services</div>
+    <h2 class="s-title">Ce qu'on fait,<br><span class="g">et pour qui</span></h2>
+    <p class="s-desc">Des solutions claires, adaptees a votre activite. Chaque service inclut un benefice concret mesurable.</p>
+    <div class="srv-wrap">
+      <div class="srv fade"><div class="srv-icon">🖥️</div><div class="srv-title">Site Vitrine</div><div class="srv-for">Artisans · Professions liberales · Restaurants</div><p class="srv-desc">Un site elegant qui presente votre activite, vos services et vos contacts. Design moderne, formulaire de contact, 100% adapte mobile.</p></div>
+      <div class="srv fade"><div class="srv-icon">🛍️</div><div class="srv-title">Boutique E-commerce</div><div class="srv-for">Commercants · Creatifs · PME</div><p class="srv-desc">Vendez vos produits 24h/24. Paiement CB securise, gestion des stocks simple, tableau de bord admin intuitif.</p></div>
+      <div class="srv fade"><div class="srv-icon">📈</div><div class="srv-title">Optimisation SEO</div><div class="srv-for">Tous secteurs · Local ou national</div><p class="srv-desc">Apparaissez en tete sur Google. Optimisation technique complete, contenu cible, visibilite locale maximisee sur Maps.</p></div>
+      <div class="srv fade"><div class="srv-icon">🔄</div><div class="srv-title">Refonte de Site</div><div class="srv-for">Entreprises avec un site vieillissant</div><p class="srv-desc">Votre site est date ou ne convertit pas ? Je le modernise avec un design actuel et une meilleure experience utilisateur.</p></div>
+      <div class="srv fade"><div class="srv-icon">📱</div><div class="srv-title">Design Responsive</div><div class="srv-for">Inclus dans tous les projets</div><p class="srv-desc">70% des visiteurs arrivent depuis mobile. Votre site sera parfait sur tous les appareils — smartphone, tablette, ordinateur.</p></div>
+      <div class="srv fade"><div class="srv-icon">🛡️</div><div class="srv-title">Maintenance & Support</div><div class="srv-for">Apres livraison</div><p class="srv-desc">Mises a jour, sauvegardes automatiques, securite renforcee. Votre site toujours en ligne et protege.</p></div>
     </div>
   </div>
 </section>
 
 <!-- PORTFOLIO -->
 
-<section class="sec sec-alt" id="portfolio">
-  <div class="tag">Portfolio</div>
-  <h2 class="h2">Projets <span>realises</span></h2>
-  <p class="sub">Quelques exemples de sites crees pour nos clients. Chaque projet est unique et livre sur-mesure.</p>
-  <div class="portfolio-grid">
-    <div class="port-card fade">
-      <div class="port-img pi1">🍕</div>
-      <div class="port-body">
-        <div class="port-tag">Restaurant</div>
-        <div class="port-name">La Bella Napoli</div>
-        <p class="port-desc">Site vitrine avec menu en ligne, reservation par formulaire et galerie photos. Livré en 4 jours.</p>
-        <div class="port-result">+65% de reservations</div>
-      </div>
-    </div>
-    <div class="port-card fade">
-      <div class="port-img pi2">🔧</div>
-      <div class="port-body">
-        <div class="port-tag">Artisan</div>
-        <div class="port-name">Plomberie Express</div>
-        <p class="port-desc">Site vitrine avec formulaire de devis urgence, temoignages clients et zones d'intervention.</p>
-        <div class="port-result">+40% d'appels entrants</div>
-      </div>
-    </div>
-    <div class="port-card fade">
-      <div class="port-img pi3">👗</div>
-      <div class="port-body">
-        <div class="port-tag">E-Commerce</div>
-        <div class="port-name">Mode & Style</div>
-        <p class="port-desc">Boutique en ligne complete avec catalogue produits, paiement CB et gestion des commandes.</p>
-        <div class="port-result">+80% de ventes en ligne</div>
-      </div>
+<section class="s s-dark" id="portfolio">
+  <div class="s-inner">
+    <div class="s-label">Portfolio</div>
+    <h2 class="s-title">Projets <span class="g">realises</span></h2>
+    <p class="s-desc">Chaque site est unique, cree sur-mesure pour l'activite du client. Voici quelques exemples concrets.</p>
+    <div class="port-wrap">
+      <div class="port fade"><div class="port-thumb pt-1">🍕</div><div class="port-body"><div class="port-cat">Restaurant</div><div class="port-title">La Bella Napoli</div><p class="port-desc">Site vitrine avec menu en ligne, reservation par formulaire et galerie photos. Livraison en 4 jours.</p><div class="port-kpi">+65% de reservations</div></div></div>
+      <div class="port fade"><div class="port-thumb pt-2">🔧</div><div class="port-body"><div class="port-cat">Artisan</div><div class="port-title">Plomberie Express</div><p class="port-desc">Site vitrine avec formulaire de devis urgent, avis clients et zones d'intervention sur carte.</p><div class="port-kpi">+40% d'appels entrants</div></div></div>
+      <div class="port fade"><div class="port-thumb pt-3">👗</div><div class="port-body"><div class="port-cat">E-Commerce</div><div class="port-title">Mode & Style</div><p class="port-desc">Boutique complete avec catalogue produits, paiement CB securise et gestion des commandes.</p><div class="port-kpi">+80% de ventes en ligne</div></div></div>
     </div>
   </div>
 </section>
 
 <!-- A PROPOS -->
 
-<section class="sec" id="about">
-  <div class="about-wrap">
-    <div>
-      <div class="about-card fade">
-        <div class="about-avatar">👨‍💻</div>
-        <div class="about-name">Olt Sinani</div>
-        <div class="about-role">Fondateur & Developpeur Web</div>
-        <div class="about-badges">
-          <span class="badge">HTML / CSS</span>
-          <span class="badge">JavaScript</span>
-          <span class="badge">SEO</span>
-          <span class="badge">Design UI</span>
-          <span class="badge">E-Commerce</span>
+<section class="s" id="about">
+  <div class="s-inner">
+    <div class="about-grid">
+      <div class="fade-l">
+        <div class="about-profile">
+          <div class="profile-avatar">👨‍💻</div>
+          <div class="profile-name">Olt Sinani</div>
+          <div class="profile-role">Fondateur & Developpeur Web</div>
+          <div class="profile-skills">
+            <span class="skill">HTML/CSS</span>
+            <span class="skill">JavaScript</span>
+            <span class="skill">SEO</span>
+            <span class="skill">UI Design</span>
+            <span class="skill">E-Commerce</span>
+            <span class="skill">Performance</span>
+          </div>
+          <div class="profile-since">Freelance depuis 2023 · Basé en France 🇫🇷</div>
         </div>
       </div>
-    </div>
-    <div>
-      <div class="tag">A propos</div>
-      <h2 class="h2">Pourquoi choisir<br><span>WebCraft ?</span></h2>
-      <p class="about-txt">Bonjour, je suis <strong>Olt</strong>, developpeur web freelance base en France. J'ai cree WebCraft avec une mission simple : <strong>rendre le web accessible aux petites entreprises</strong> qui meritent une presence en ligne professionnelle sans se ruiner.<br><br>Je travaille directement avec vous, sans intermediaire. Chaque site est cree sur-mesure pour votre activite, optimise pour Google et livre rapidement.</p>
-      <div class="process">
-        <div class="proc-step fade"><div class="proc-num">1</div><div><div class="proc-name">Echange & devis</div><p class="proc-txt">On discute de votre projet. Je vous envoie un devis gratuit sous 24h.</p></div></div>
-        <div class="proc-step fade"><div class="proc-num">2</div><div><div class="proc-name">Creation du site</div><p class="proc-txt">Je cree votre site en 5 jours avec des retours reguliers.</p></div></div>
-        <div class="proc-step fade"><div class="proc-num">3</div><div><div class="proc-name">Livraison & mise en ligne</div><p class="proc-txt">Votre site est en ligne, vous payez et je reste disponible.</p></div></div>
+      <div class="fade-r">
+        <div class="s-label">A propos</div>
+        <h2 class="s-title">Pourquoi choisir<br><span class="g">WebCraft ?</span></h2>
+        <div class="about-text">
+          <p>Je suis <strong>Olt</strong>, developpeur web freelance base en France. J'ai cree WebCraft avec une mission simple : <strong>rendre le web professionnel accessible aux petites entreprises</strong> qui meritent une presence en ligne de qualite sans se ruiner.</p>
+          <p>Pas d'agence avec 10 intermediaires. Vous travaillez directement avec moi. Chaque site est cree sur-mesure, optimise pour Google et livre rapidement avec un suivi personnalise.</p>
+        </div>
+        <div class="steps">
+          <div class="step fade"><div class="step-num">1</div><div><div class="step-title">Echange & devis gratuit</div><p class="step-desc">On discute de votre projet. Je vous envoie un devis clair sous 24h, sans engagement.</p></div></div>
+          <div class="step fade"><div class="step-num">2</div><div><div class="step-title">Creation en 5 jours</div><p class="step-desc">Je cree votre site avec des retours reguliers. Vous validez chaque etape.</p></div></div>
+          <div class="step fade"><div class="step-num">3</div><div><div class="step-title">Livraison & mise en ligne</div><p class="step-desc">Votre site est en ligne. Vous payez et je reste disponible pour les modifications.</p></div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -405,181 +420,214 @@ footer,.legal-bottom{flex-direction:column;gap:0.8rem;text-align:center}
 
 <!-- TARIFS -->
 
-<section class="sec sec-alt" id="tarifs">
-  <div class="tag">Tarifs</div>
-  <h2 class="h2">Transparent.<br><span>Sans surprise.</span></h2>
-  <p class="sub">Un seul paiement, pas d'abonnement cache. Choisissez l'offre adaptee a votre projet.</p>
-  <div class="price-grid">
-    <div class="price-card fade">
-      <div class="p-tier">Starter</div>
-      <div class="p-price"><sup>€</sup>29</div>
-      <div class="p-period">Paiement unique — sans abonnement</div>
-      <div class="p-line"></div>
-      <ul class="p-feats">
-        <li>Site vitrine 3 pages</li>
-        <li>Design responsive mobile</li>
-        <li>Formulaire de contact</li>
-        <li>Mise en ligne incluse</li>
-        <li>1 mois de support</li>
-      </ul>
-      <a href="https://paypal.me/OltSinani/29" target="_blank" class="p-btn">Payer 29€ via PayPal</a>
+<section class="s s-dark" id="tarifs">
+  <div class="s-inner">
+    <div class="s-label">Tarifs</div>
+    <h2 class="s-title">Transparent.<br><span class="g">Sans surprise.</span></h2>
+    <p class="s-desc">Un seul paiement, pas d'abonnement cache. Choisissez l'offre adaptee a votre projet et payez en securite via PayPal.</p>
+    <div class="price-wrap">
+      <div class="pc fade">
+        <div class="pc-name">Starter</div>
+        <div class="pc-price"><sup>€</sup>29</div>
+        <div class="pc-note">Paiement unique — aucun abonnement</div>
+        <div class="pc-div"></div>
+        <ul class="pc-feats">
+          <li>Site vitrine 3 pages</li>
+          <li>Design responsive mobile</li>
+          <li>Formulaire de contact</li>
+          <li>Mise en ligne incluse</li>
+          <li>Optimisation SEO de base</li>
+          <li>1 mois de support</li>
+        </ul>
+        <a href="https://paypal.me/OltSinani/29" target="_blank" class="pc-btn">Payer 29€ via PayPal</a>
+      </div>
+      <div class="pc best fade">
+        <div class="pc-badge">⭐ Le plus choisi</div>
+        <div class="pc-name">Business</div>
+        <div class="pc-price"><sup>€</sup>59</div>
+        <div class="pc-note">Paiement unique — aucun abonnement</div>
+        <div class="pc-div"></div>
+        <ul class="pc-feats">
+          <li>Site vitrine jusqu'a 6 pages</li>
+          <li>Design sur-mesure premium</li>
+          <li>SEO complet + Google Maps</li>
+          <li>Blog / actualites</li>
+          <li>Formulaire avance</li>
+          <li>3 mois de support prioritaire</li>
+        </ul>
+        <a href="https://paypal.me/OltSinani/59" target="_blank" class="pc-btn go">Payer 59€ via PayPal</a>
+      </div>
+      <div class="pc fade">
+        <div class="pc-name">E-Commerce</div>
+        <div class="pc-price"><sup>€</sup>99</div>
+        <div class="pc-note">Paiement unique — aucun abonnement</div>
+        <div class="pc-div"></div>
+        <ul class="pc-feats">
+          <li>Boutique e-commerce complete</li>
+          <li>Paiement CB securise</li>
+          <li>Gestion des stocks & commandes</li>
+          <li>Produits illimites</li>
+          <li>Tableau de bord admin</li>
+          <li>6 mois de support prioritaire</li>
+        </ul>
+        <a href="https://paypal.me/OltSinani/99" target="_blank" class="pc-btn">Payer 99€ via PayPal</a>
+      </div>
     </div>
-    <div class="price-card hot fade">
-      <div class="hot-tag">Le plus populaire</div>
-      <div class="p-tier">Business</div>
-      <div class="p-price"><sup>€</sup>59</div>
-      <div class="p-period">Paiement unique — sans abonnement</div>
-      <div class="p-line"></div>
-      <ul class="p-feats">
-        <li>Site vitrine 6 pages</li>
-        <li>Design sur-mesure</li>
-        <li>Optimisation SEO complete</li>
-        <li>Google Maps integre</li>
-        <li>Blog / actualites</li>
-        <li>3 mois de support</li>
-      </ul>
-      <a href="https://paypal.me/OltSinani/59" target="_blank" class="p-btn cta">Payer 59€ via PayPal</a>
-    </div>
-    <div class="price-card fade">
-      <div class="p-tier">E-Commerce</div>
-      <div class="p-price"><sup>€</sup>99</div>
-      <div class="p-period">Paiement unique — sans abonnement</div>
-      <div class="p-line"></div>
-      <ul class="p-feats">
-        <li>Boutique complete</li>
-        <li>Paiement CB securise</li>
-        <li>Gestion des stocks</li>
-        <li>Produits illimites</li>
-        <li>Tableau de bord admin</li>
-        <li>6 mois de support</li>
-      </ul>
-      <a href="https://paypal.me/OltSinani/99" target="_blank" class="p-btn">Payer 99€ via PayPal</a>
+  </div>
+</section>
+
+<!-- FAQ -->
+
+<section class="s" id="faq">
+  <div class="s-inner" style="max-width:800px">
+    <div class="s-label">FAQ</div>
+    <h2 class="s-title" style="text-align:center">Questions <span class="g">frequentes</span></h2>
+    <p class="s-desc" style="text-align:center;max-width:100%;margin-bottom:3rem">Tout ce que vous devez savoir avant de demarrer votre projet.</p>
+    <div class="faq-wrap">
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Comment se deroule le processus ?<div class="faq-ico">+</div></div><div class="faq-a"><div class="faq-a-inner">C'est simple : vous m'envoyez un message, je vous reponds sous 24h avec un devis. Une fois valide, je cree votre site en 5 jours avec des retours reguliers. Apres validation, je mets tout en ligne.</div></div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Est-ce que je peux modifier mon site apres livraison ?<div class="faq-ico">+</div></div><div class="faq-a"><div class="faq-a-inner">Oui, les modifications mineures (textes, images, couleurs) sont incluses pendant 1 a 6 mois selon l'offre. Pour des modifications importantes, je vous etablis un devis rapidement.</div></div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Mon site sera-t-il visible sur Google ?<div class="faq-ico">+</div></div><div class="faq-a"><div class="faq-a-inner">Oui. Chaque site est optimise pour le referencement (SEO) des la creation. L'offre Business inclut un SEO complet avec optimisation des mots-cles et Google Maps. Les resultats apparaissent generalement dans les 2-4 semaines.</div></div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Le paiement est-il securise ?<div class="faq-ico">+</div></div><div class="faq-a"><div class="faq-a-inner">Oui, le paiement se fait via PayPal qui est l'une des plateformes les plus securisees au monde. Vous pouvez payer par carte bancaire ou avec votre compte PayPal. Le paiement est protege par la politique d'acheteur PayPal.</div></div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Que se passe-t-il si je ne suis pas satisfait ?<div class="faq-ico">+</div></div><div class="faq-a"><div class="faq-a-inner">Votre satisfaction est ma priorite. Si le resultat ne vous convient pas apres livraison, je fais les modifications necessaires gratuitement jusqu'a ce que vous soyez pleinement satisfait.</div></div></div>
     </div>
   </div>
 </section>
 
 <!-- CONTACT -->
 
-<section class="sec" id="contact">
-  <div class="contact-wrap">
-    <div>
-      <div class="tag">Contact</div>
-      <h2 class="h2">Votre projet<br><span>commence ici</span></h2>
-      <p style="color:rgba(240,238,255,0.52);font-size:0.88rem;line-height:1.75;margin-bottom:1.5rem;">Decrivez votre activite et vos besoins. Je vous reponds sous 24h avec une estimation gratuite et sans engagement.</p>
-      <div class="c-infos">
-        <div class="c-row"><div class="c-ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 4l6 5 6-5M2 4h12v9H2V4z" stroke="#a78bfa" stroke-width="1.3" stroke-linecap="round"/></svg></div><span>iremovyou<strong>@gmail.com</strong></span></div>
-        <div class="c-row"><div class="c-ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#a78bfa" stroke-width="1.3"/><path d="M8 5v3l2 2" stroke="#a78bfa" stroke-width="1.3" stroke-linecap="round"/></svg></div><span>Reponse sous <strong>24h</strong> garantie</span></div>
-        <div class="c-row"><div class="c-ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="7" r="2.5" stroke="#a78bfa" stroke-width="1.3"/><path d="M8 2C5.24 2 3 4.24 3 7c0 3.5 5 9 5 9s5-5.5 5-9c0-2.76-2.24-5-5-5z" stroke="#a78bfa" stroke-width="1.3"/></svg></div><span>France — <strong>Disponible partout</strong></span></div>
+<section class="s s-dark" id="contact">
+  <div class="s-inner">
+    <div class="contact-grid">
+      <div class="fade-l">
+        <div class="s-label">Contact</div>
+        <h2 class="s-title">Votre projet<br><span class="g">commence ici</span></h2>
+        <p class="contact-left">Decrivez votre activite et vos besoins. Je vous reponds sous 24h avec une estimation gratuite et sans engagement.</p>
+        <div class="c-cards">
+          <div class="c-card"><div class="c-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 4l6 5 6-5M2 4h12v9H2V4z" stroke="#a78bfa" stroke-width="1.3" stroke-linecap="round"/></svg></div><span>iremovyou<strong>@gmail.com</strong></span></div>
+          <div class="c-card"><div class="c-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#a78bfa" stroke-width="1.3"/><path d="M8 5v3l2 2" stroke="#a78bfa" stroke-width="1.3" stroke-linecap="round"/></svg></div><span>Reponse garantie sous <strong>24h</strong></span></div>
+          <div class="c-card"><div class="c-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="7" r="2.5" stroke="#a78bfa" stroke-width="1.3"/><path d="M8 2C5.24 2 3 4.24 3 7c0 3.5 5 9 5 9s5-5.5 5-9c0-2.76-2.24-5-5-5z" stroke="#a78bfa" stroke-width="1.3"/></svg></div><span>France — <strong>Disponible partout</strong></span></div>
+        </div>
+        <div class="guarantee-box">
+          <div class="g-ico">🔒</div>
+          <div><div class="g-title">Satisfaction 100% garantie</div><p class="g-text">Si le resultat ne vous convient pas, je fais toutes les modifications necessaires gratuitement jusqu'a votre validation totale.</p></div>
+        </div>
       </div>
-      <div class="guarantee">
-        <div class="g-ico">🔒</div>
-        <div>
-          <div class="g-title">Satisfaction garantie</div>
-          <p class="g-txt">Si le resultat ne vous convient pas apres livraison, je fais les modifications necessaires gratuitement. Votre satisfaction est ma priorite.</p>
+      <div class="fade-r">
+        <div class="form-wrap">
+          <div class="form-title">Envoyer un message 💬</div>
+          <form class="form" id="contactForm" action="https://formspree.io/f/mlgaywwy" method="POST">
+            <div class="form-row">
+              <div class="field"><label>Prenom</label><input type="text" name="prenom" placeholder="Votre prenom" required></div>
+              <div class="field"><label>Nom</label><input type="text" name="nom" placeholder="Votre nom" required></div>
+            </div>
+            <div class="field"><label>Email</label><input type="email" name="email" placeholder="votre@email.fr" required></div>
+            <div class="field"><label>Telephone (optionnel)</label><input type="tel" name="telephone" placeholder="+33 6 00 00 00 00"></div>
+            <div class="field"><label>Secteur d'activite</label>
+              <select name="activite">
+                <option value="">Choisissez votre secteur...</option>
+                <option>Restaurant / Bar / Cafe</option>
+                <option>Artisan / BTP / Renovation</option>
+                <option>Commerce / Boutique</option>
+                <option>Sante / Beaute / Bien-etre</option>
+                <option>Professionnel liberal</option>
+                <option>Association / ONG</option>
+                <option>Autre secteur</option>
+              </select>
+            </div>
+            <div class="field"><label>Offre qui vous interesse</label>
+              <select name="offre">
+                <option value="">Selectionnez une offre...</option>
+                <option>Starter — 29 euros (Site vitrine 3 pages)</option>
+                <option>Business — 59 euros (Site 6 pages + SEO)</option>
+                <option>E-Commerce — 99 euros (Boutique complete)</option>
+                <option>Je ne sais pas encore</option>
+              </select>
+            </div>
+            <div class="field"><label>Decrivez votre projet</label><textarea name="message" placeholder="Parlez-moi de votre activite, vos objectifs, ce que vous attendez de votre site..."></textarea></div>
+            <button type="submit" class="submit">Envoyer ma demande <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8l10-6-3 6 3 6-10-6z" fill="currentColor"/></svg></button>
+            <div class="ok" id="okMsg">✓ Message envoye ! Je vous reponds sous 24h. Merci de votre confiance !</div>
+          </form>
         </div>
       </div>
     </div>
-    <form class="form" id="contactForm" action="https://formspree.io/f/mlgaywwy" method="POST">
-      <div class="form-row">
-        <div class="field"><label>Prenom</label><input type="text" name="prenom" placeholder="Votre prenom" required></div>
-        <div class="field"><label>Nom</label><input type="text" name="nom" placeholder="Votre nom" required></div>
-      </div>
-      <div class="field"><label>Email</label><input type="email" name="email" placeholder="votre@email.fr" required></div>
-      <div class="field"><label>Telephone (optionnel)</label><input type="tel" name="telephone" placeholder="+33 6 ..."></div>
-      <div class="field"><label>Type d'activite</label>
-        <select name="activite">
-          <option value="">Choisissez...</option>
-          <option>Restaurant / Bar</option><option>Artisan / BTP</option>
-          <option>Commerce / Boutique</option><option>Sante / Beaute</option>
-          <option>Professionnel liberal</option><option>Association</option><option>Autre</option>
-        </select>
-      </div>
-      <div class="field"><label>Offre souhaitee</label>
-        <select name="budget">
-          <option value="">Choisissez...</option>
-          <option>Starter - 29 euros</option>
-          <option>Business - 59 euros</option>
-          <option>E-Commerce - 99 euros</option>
-          <option>A definir ensemble</option>
-        </select>
-      </div>
-      <div class="field"><label>Decrivez votre projet</label><textarea name="message" placeholder="Decrivez votre activite et ce que vous attendez de votre site..."></textarea></div>
-      <button type="submit" class="sub-btn">Envoyer ma demande <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8l10-6-3 6 3 6-10-6z" fill="currentColor"/></svg></button>
-      <div class="ok-msg" id="okMsg">✓ Message envoye ! Je vous reponds sous 24h.</div>
-    </form>
   </div>
 </section>
 
-<!-- LEGAL -->
+<!-- FOOTER -->
 
-<div class="legal">
-  <div class="legal-grid">
-    <div>
-      <div class="legal-title">Mentions legales</div>
-      <p class="legal-txt">WebCraft — Auto-entrepreneur<br>Siret : en cours d'enregistrement<br>Responsable : Olt Sinani<br>Contact : iremovyou@gmail.com</p>
-    </div>
-    <div>
-      <div class="legal-title">Politique de confidentialite</div>
-      <p class="legal-txt">Les donnees collectees via le formulaire de contact sont utilisees uniquement pour repondre a vos demandes. Elles ne sont pas partagees avec des tiers et sont conservees 12 mois maximum.</p>
-    </div>
-    <div>
-      <div class="legal-title">Conditions generales</div>
-      <p class="legal-txt">Tout projet demarre apres confirmation du devis et paiement. Le client valide chaque etape. Modifications incluses pendant 30 jours apres livraison.</p>
+<div class="footer-top">
+  <div class="ft-brand">
+    <span class="logo">WebCraft</span>
+    <p>Agence web freelance specialisee dans la creation de sites web professionnels pour les petites et moyennes entreprises francaises.</p>
+  </div>
+  <div>
+    <div class="ft-col-title">Navigation</div>
+    <div class="ft-links">
+      <a href="#services">Services</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#avis">Avis clients</a>
+      <a href="#tarifs">Tarifs</a>
+      <a href="#faq">FAQ</a>
+      <a href="#about">A propos</a>
     </div>
   </div>
-  <div class="legal-bottom">
-    <div class="ft-logo">WebCraft</div>
-    <p>2026 WebCraft — Tous droits reserves</p>
-    <p>Fait avec passion en France 🇫🇷</p>
+  <div>
+    <div class="ft-col-title">Services</div>
+    <div class="ft-links">
+      <a href="#services">Site Vitrine</a>
+      <a href="#services">E-Commerce</a>
+      <a href="#services">SEO & Referencement</a>
+      <a href="#services">Refonte de site</a>
+      <a href="#services">Maintenance</a>
+    </div>
   </div>
+  <div>
+    <div class="ft-col-title">Contact</div>
+    <div class="ft-links">
+      <a href="mailto:iremovyou@gmail.com">iremovyou@gmail.com</a>
+      <a href="#contact">Devis gratuit</a>
+      <a href="https://paypal.me/OltSinani" target="_blank">Payer via PayPal</a>
+    </div>
+  </div>
+</div>
+<div class="legal-note">Mentions legales : WebCraft — Auto-entrepreneur — Responsable : Olt Sinani — iremovyou@gmail.com — Les donnees collectees via le formulaire sont utilisees uniquement pour repondre a vos demandes et ne sont pas partagees avec des tiers.</div>
+<div class="footer-bot">
+  <span class="logo" style="font-size:1rem">WebCraft</span>
+  <p>2026 WebCraft — Tous droits reserves</p>
+  <p>Fait avec passion en France 🇫🇷</p>
 </div>
 
 <script>
-  // Loader
-  window.addEventListener('load', () => {
-    setTimeout(() => document.getElementById('loader').classList.add('gone'), 600);
-  });
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('hide'),700));
 
-  // Cursor glow
-  const gc = document.getElementById('gc');
-  document.addEventListener('mousemove', e => {
-    gc.style.left = e.clientX + 'px';
-    gc.style.top = e.clientY + 'px';
-  });
+const cg=document.getElementById('cg');
+document.addEventListener('mousemove',e=>{cg.style.left=e.clientX+'px';cg.style.top=e.clientY+'px'});
 
-  // Scroll animations
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach((e, i) => {
-      if (e.isIntersecting) setTimeout(() => e.target.classList.add('in'), i * 80);
-    });
-  }, { threshold: 0.08 });
-  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('in'),i*80)});
+},{threshold:0.08});
+document.querySelectorAll('.fade,.fade-l,.fade-r').forEach(el=>obs.observe(el));
 
-  // Form
-  document.getElementById('contactForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const btn = this.querySelector('.sub-btn');
-    btn.textContent = 'Envoi en cours...'; btn.disabled = true;
-    try {
-      const res = await fetch('https://formspree.io/f/mlgaywwy', {
-        method: 'POST', body: new FormData(this),
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.ok) {
-        document.getElementById('okMsg').style.display = 'block';
-        btn.textContent = '✓ Message envoye!'; this.reset();
-      } else { btn.textContent = 'Erreur — Reessayez'; btn.disabled = false; }
-    } catch { btn.textContent = 'Erreur — Reessayez'; btn.disabled = false; }
-  });
+function toggleFaq(el){
+  const item=el.parentElement;
+  document.querySelectorAll('.faq-item').forEach(f=>{if(f!==item)f.classList.remove('open')});
+  item.classList.toggle('open');
+}
 
-  // Smooth scroll
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      const t = document.querySelector(a.getAttribute('href'));
-      if (t) t.scrollIntoView({ behavior: 'smooth' });
-    });
-  });
+document.getElementById('contactForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const btn=this.querySelector('.submit');
+  btn.textContent='Envoi en cours...';btn.disabled=true;
+  try{
+    const res=await fetch('https://formspree.io/f/mlgaywwy',{method:'POST',body:new FormData(this),headers:{'Accept':'application/json'}});
+    if(res.ok){document.getElementById('okMsg').style.display='block';btn.textContent='✓ Envoye !';this.reset();}
+    else{btn.textContent='Erreur — Reessayez';btn.disabled=false;}
+  }catch{btn.textContent='Erreur — Reessayez';btn.disabled=false;}
+});
+
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth'})});
+});
 </script>
 
 </body>
