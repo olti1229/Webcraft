@@ -1,81 +1,34 @@
-import requests
-import time
-import random
-import json
-from concurrent.futures import ThreadPoolExecutor
-from fake_useragent import UserAgent
-
-# Конфигурация
-PROXIES = [
-    "http://user:pass@ip1:port",
-    "http://user:pass@ip2:port",
-]
-TOKENS = ["EAAG...", "EAAD..."]  # Access-токены Facebook/Instagram
-TARGET_ID = "123456789"  # ID целевого аккаунта или поста
-REPORT_ENDPOINT = "https://graph.facebook.com/v18.0/{}/reports"
-REASON_CODE = 1  # 1=спам, 2=насилие, 3=ненависть, 4=фейк
-
-ua = UserAgent()
-
-def send_report(token, proxy, target_id):
-    """Отправка одной жалобы"""
-    headers = {
-        "User-Agent": ua.random,
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "reason": REASON_CODE,
-        "type": "USER" if target_id.isdigit() else "MEDIA",
-        "target_id": target_id,
-        "note": "Автоматическая жалоба: массовый спам и нарушение правил",
-    }
-    proxy_dict = {"http": proxy, "https": proxy} if proxy else None
-    try:
-        url = REPORT_ENDPOINT.format(target_id)
-        resp = requests.post(url, json=payload, headers=headers, proxies=proxy_dict, timeout=15)
-        if resp.status_code == 200:
-            data = resp.json()
-            if data.get("success"):
-                return f"OK: report_id={data.get('report_id')}"
-            else:
-                return f"FAIL: {data.get('error', {}).get('message')}"
-        else:
-            return f"HTTP {resp.status_code}: {resp.text[:100]}"
-    except Exception as e:
-        return f"EXCEPTION: {str(e)}"
-
-def worker(token_proxy):
-    """Воркер для потока"""
-    token, proxy = token_proxy
-    delay = random.uniform(30, 90)
-    time.sleep(delay)
-    result = send_report(token, proxy, TARGET_ID)
-    return result
-
-def main():
-    """Запуск массовой отправки жалоб"""
-    if len(TOKENS) != len(PROXIES):
-        print("Ошибка: количество токенов и прокси должно совпадать")
-        return
-    
-    token_proxy_pairs = list(zip(TOKENS, PROXIES))
-    results = []
-    with ThreadPoolExecutor(max_workers=min(10, len(token_proxy_pairs))) as executor:
-        futures = [executor.submit(worker, pair) for pair in token_proxy_pairs]
-        for f in futures:
-            results.append(f.result())
-    
-    # Сохраняем лог
-    with open("report_log.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "timestamp": time.time(),
-            "target": TARGET_ID,
-            "results": results
-        }, f, indent=2)
-    
-    print(f"Отправлено жалоб: {len(results)}")
-    print(f"Успешно: {sum(1 for r in results if r.startswith('OK'))}")
-
-if __name__ == "__main__":
-    main()
+# Структура репозитория для Python проекта
+project_name/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── src/
+│   └── package_name/
+│       ├── __init__.py
+│       ├── main.py
+│       ├── core/
+│       │   ├── __init__.py
+│       │   └── logic.py
+│       ├── utils/
+│       │   ├── __init__.py
+│       │   └── helpers.py
+│       └── config/
+│           ├── __init__.py
+│           └── settings.py
+├── tests/
+│   ├── __init__.py
+│   ├── test_core.py
+│   └── test_utils.py
+├── scripts/
+│   ├── setup.sh
+│   └── deploy.py
+├── docs/
+│   └── api.md
+├── .gitignore
+├── requirements.txt
+├── requirements_dev.txt
+├── setup.py
+├── pyproject.toml
+├── README.md
+└── LICENSE
