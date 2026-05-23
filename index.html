@@ -32,3 +32,60 @@ project_name/
 ├── pyproject.toml
 ├── README.md
 └── LICENSE
+# .gitignore
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.env
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.coverage
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+*.log
+config/local_*.py
+# setup.py
+from setuptools import setup, find_packages
+
+setup(
+    name="package_name",
+    version="0.1.0",
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
+    install_requires=[
+        "requests>=2.28.0",
+    ],
+    python_requires=">=3.9",
+# setup.py
+from setuptools import setup, find_packages
+
+setup(
+    name="package_name",
+    version="0.1.0",
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
+    install_requires=[
+        "requests>=2.28.0",
+    ],
+    python_requires=">=3.9",
+)
+# Команды для рефакторинга
+mkdir -p src/package_name/{core,utils,config} tests scripts docs .github/workflows
+touch src/package_name/__init__.py src/package_name/main.py
+touch src/package_name/core/__init__.py src/package_name/utils/__init__.py
+touch src/package_name/config/__init__.py
+touch tests/__init__.py tests/test_core.py
+touch requirements.txt requirements_dev.txt setup.py pyproject.toml README.md .gitignore
+echo "# Project Name" > README.md
+echo "requests>=2.28.0" > requirements.txt
+echo "pytest>=7.0.0\npytest-cov>=4.0.0" > requirements_dev.txt
+
+
+
+
+
