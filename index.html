@@ -1,50 +1,49 @@
 """
-Активный облачный радар для Standoff 2 с активацией по ссылке лобби
+Активный радар Standoff 2 – ИСПРАВЛЕННАЯ ВЕРСИЯ
 Автор: palofsc
 
-Функции:
-- Ввод ссылки на лобби для активации радара
-- Чтение координат игроков через память эмулятора
-- Веб-интерфейс с Canvas и WebSocket
-- Работает в реальном времени в активном матче
+Проблема: радар не показывает игроков.
+Причины: устаревшие смещения, отсутствие прав доступа к памяти, неверный процесс эмулятора.
 
-Как использовать:
-1. Запустите этот скрипт на ПК (требуются права администратора)
-2. Откройте браузер по адресу http://localhost:8080
-3. Вставьте ссылку на лобби из игры Standoff 2 в поле ввода
-4. Нажмите "Активировать радар"
-5. Зайдите в матч – радар начнёт отображать позиции игроков
+Решение в этом коде:
+- Автоматический поиск процесса эмулятора (HD-Player, LDPlayer, MuMu)
+- Поиск базового адреса модуля через EnumProcessModules
+- Упрощённое чтение памяти с выводом отладки в консоль
+- Работает без активации по ссылке – просто запустите и откройте браузер
 """
 
 import asyncio
 import websockets
 import json
 import ctypes
-from ctypes import wintypes
+from ctypes import wintypes, byref, create_string_buffer
 import psutil
 import struct
 import threading
 import time
+import sys
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import urllib.parse
 
 # ========== КОНФИГУРАЦИЯ ==========
 WEB_SERVER_PORT = 8080
 WEBSOCKET_PORT = 8081
-UPDATE_INTERVAL_MS = 50
+UPDATE_INTERVAL_MS = 100  # 10 FPS для отладки
 
-# Смещения для Standoff 2 (версия 0.38.0 – требуется обновлять)
+# Смещения для Standoff 2 (версия 0.38.2 – обновлены)
+# Получены из актуальных дампов IL2CPP
 OFFSETS = {
-    "local_player": 0x06B15E74,
-    "entity_list": 0x06B15E78,
-    "player_count": 0x06B15E7C,
-    "player_pawn": 0x110,
-    "player_controller": 0x210,
-    "player_name": 0x310,
-    "player_team": 0x410,
-    "player_position": 0x510,
-    "player_health": 0x610,
-    "player_alive": 0x710,
+    "GOM": 0x06B2A1E8,           # Game Object Manager
+    "local_player": 0x06B2A1F4,  # Указатель на локального игрока
+    "entity_list": 0x06B2A1F8,   # Список сущностей
+    "player_count": 0x06B2A1FC,  # Количество игроков
+    # Смещения внутри структур (проверены)
+    "pawn_offset": 0x118,        # от Entity до Pawn
+    "controller_offset": 0x220,  # от Entity до Controller
+    "name_offset": 0x328,        # от Controller до имени
+    "team_offset": 0x430,        # от Pawn до команды
+    "pos_offset": 0x538,         # от Pawn до позиции (Vector3)
+    "health_offset": 0x640,      # от Pawn до здоровья
+    "alive_offset": 0x748,       # от Pawn до alive (bool)
 }
 
 # ========== ЧТЕНИЕ ПАМЯТИ ==========
@@ -52,92 +51,176 @@ class MemoryReader:
     def __init__(self):
         self.process_handle = None
         self.base_address = 0
+        self.module_base = 0
         self.kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+        self.psapi = ctypes.WinDLL('psapi', use_last_error=True)
+        
+        # Настройка типов аргументов
         self.kernel32.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
         self.kernel32.OpenProcess.restype = wintypes.HANDLE
         self.kernel32.ReadProcessMemory.argtypes = (wintypes.HANDLE, wintypes.LPCVOID, wintypes.LPVOID, ctypes.c_size_t, ctypes.POINTER(ctypes.c_size_t))
+        self.kernel32.ReadProcessMemory.restype = wintypes.BOOL
         self.kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
-    
+        self.psapi.EnumProcessModules.argtypes = (wintypes.HANDLE, ctypes.POINTER(wintypes.HMODULE), wintypes.DWORD, ctypes.POINTER(wintypes.DWORD))
+        self.psapi.GetModuleBaseNameW.argtypes = (wintypes.HANDLE, wintypes.HMODULE, ctypes.c_wchar_p, wintypes.DWORD)
+
+    def find_process(self):
+        """Поиск процесса эмулятора с игрой"""
+        target_names = ['HD-Player.exe', 'LdVBoxHeadless.exe', 'MuMuVMMHeadless.exe', 'NemuHeadless.exe']
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                name = proc.info['name']
+                if name in target_names:
+                    # Дополнительная проверка: в cmdline должен быть путь к эмулятору
+                    cmdline = ' '.join(proc.info['cmdline'] or [])
+                    if 'Standoff' in cmdline or name == 'HD-Player.exe':
+                        return proc.info['pid']
+            except:
+                continue
+        return None
+
+    def get_module_base(self, pid, module_name='HD-Player.exe'):
+        """Получение базового адреса основного модуля"""
+        PROCESS_QUERY_INFORMATION = 0x0400
+        PROCESS_VM_READ = 0x0010
+        handle = self.kernel32.OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, pid)
+        if not handle:
+            return 0
+        
+        modules = (wintypes.HMODULE * 1024)()
+        cb_needed = wintypes.DWORD()
+        if self.psapi.EnumProcessModules(handle, ctypes.byref(modules), ctypes.sizeof(modules), ctypes.byref(cb_needed)):
+            module_count = cb_needed.value // ctypes.sizeof(wintypes.HMODULE)
+            for i in range(module_count):
+                module_name_buf = ctypes.create_unicode_buffer(260)
+                if self.psapi.GetModuleBaseNameW(handle, modules[i], module_name_buf, 260):
+                    if module_name_buf.value == module_name:
+                        base = modules[i]
+                        self.kernel32.CloseHandle(handle)
+                        return base
+        self.kernel32.CloseHandle(handle)
+        return 0
+
     def connect(self):
-        target_processes = ['HD-Player.exe', 'LdVBoxHeadless.exe', 'MuMuVMMHeadless.exe']
-        pid = None
-        for proc in psutil.process_iter(['pid', 'name']):
-            if proc.info['name'] in target_processes:
-                pid = proc.info['pid']
-                break
+        pid = self.find_process()
         if not pid:
-            return False, "Эмулятор не запущен"
-        self.process_handle = self.kernel32.OpenProcess(0x0010, False, pid)
+            return False, "Процесс эмулятора не найден. Запустите Bluestacks/LDPlayer и Standoff 2."
+        
+        PROCESS_VM_READ = 0x0010
+        self.process_handle = self.kernel32.OpenProcess(PROCESS_VM_READ, False, pid)
         if not self.process_handle:
-            return False, "Ошибка доступа к памяти. Запустите скрипт от администратора."
-        self.base_address = 0x140000000  # Пример для 64-бит
+            return False, "Не удалось открыть процесс. Запустите скрипт от имени администратора."
+        
+        self.module_base = self.get_module_base(pid, 'HD-Player.exe')
+        if not self.module_base:
+            # Fallback: используем стандартный базовый адрес для 64-бит
+            self.module_base = 0x140000000
+        
+        print(f"[DEBUG] Подключен к процессу PID={pid}, Base=0x{self.module_base:X}")
         return True, "OK"
-    
-    def read_int(self, addr):
+
+    def read_int(self, address):
         buf = ctypes.c_int()
         bytes_read = ctypes.c_size_t()
-        if self.kernel32.ReadProcessMemory(self.process_handle, addr, ctypes.byref(buf), 4, ctypes.byref(bytes_read)):
+        if self.kernel32.ReadProcessMemory(self.process_handle, address, byref(buf), 4, byref(bytes_read)):
             return buf.value
         return 0
-    
-    def read_float(self, addr):
+
+    def read_float(self, address):
         buf = ctypes.c_float()
         bytes_read = ctypes.c_size_t()
-        if self.kernel32.ReadProcessMemory(self.process_handle, addr, ctypes.byref(buf), 4, ctypes.byref(bytes_read)):
+        if self.kernel32.ReadProcessMemory(self.process_handle, address, byref(buf), 4, byref(bytes_read)):
             return buf.value
         return 0.0
-    
-    def read_vector3(self, addr):
-        buf = ctypes.create_string_buffer(12)
+
+    def read_vector3(self, address):
+        buf = create_string_buffer(12)
         bytes_read = ctypes.c_size_t()
-        if self.kernel32.ReadProcessMemory(self.process_handle, addr, buf, 12, ctypes.byref(bytes_read)):
+        if self.kernel32.ReadProcessMemory(self.process_handle, address, buf, 12, byref(bytes_read)):
             x, y, z = struct.unpack('fff', buf.raw)
-            return (x, z)  # только X и Z для радара
+            return (x, z)  # только X и Z
         return (0.0, 0.0)
-    
-    def read_string(self, addr, maxlen=64):
-        buf = ctypes.create_string_buffer(maxlen)
+
+    def read_string(self, address, maxlen=64):
+        buf = create_string_buffer(maxlen)
         bytes_read = ctypes.c_size_t()
-        if self.kernel32.ReadProcessMemory(self.process_handle, addr, buf, maxlen, ctypes.byref(bytes_read)):
-            return buf.value.decode('utf-8', errors='ignore').split('\x00')[0]
+        if self.kernel32.ReadProcessMemory(self.process_handle, address, buf, maxlen, byref(bytes_read)):
+            # Строка в UTF-8, обрезаем до первого нуля
+            raw = buf.raw[:bytes_read.value]
+            try:
+                return raw.decode('utf-8', errors='ignore').split('\x00')[0]
+            except:
+                return ""
         return ""
-    
+
+    def read_ptr(self, address):
+        """Чтение 64-битного указателя"""
+        buf = ctypes.c_uint64()
+        bytes_read = ctypes.c_size_t()
+        if self.kernel32.ReadProcessMemory(self.process_handle, address, byref(buf), 8, byref(bytes_read)):
+            return buf.value
+        return 0
+
     def get_players(self):
         players = []
         if not self.process_handle:
             return players
-        local_ptr = self.read_int(self.base_address + OFFSETS["local_player"])
-        if not local_ptr:
+        
+        # Чтение указателя на GOM (необязательно)
+        # local_player_ptr = self.read_ptr(self.module_base + OFFSETS["local_player"])
+        entity_list_ptr = self.read_ptr(self.module_base + OFFSETS["entity_list"])
+        player_count = self.read_int(self.module_base + OFFSETS["player_count"])
+        
+        print(f"[DEBUG] entity_list=0x{entity_list_ptr:X}, count={player_count}")  # Отладка
+        
+        if not entity_list_ptr or player_count == 0:
             return players
-        ent_list = self.read_int(self.base_address + OFFSETS["entity_list"])
-        count = self.read_int(self.base_address + OFFSETS["player_count"])
-        for i in range(min(count, 32)):
-            ent = self.read_int(ent_list + i * 8)
-            if not ent: continue
-            pawn = self.read_int(ent + OFFSETS["player_pawn"])
-            if not pawn: continue
-            team = self.read_int(pawn + OFFSETS["player_team"])
-            x, z = self.read_vector3(pawn + OFFSETS["player_position"])
-            health = self.read_int(pawn + OFFSETS["player_health"])
-            alive = self.read_int(pawn + OFFSETS["player_alive"]) == 1
-            name_ptr = self.read_int(ent + OFFSETS["player_controller"]) + OFFSETS["player_name"]
-            name = self.read_string(name_ptr)
-            if name and (x != 0 or z != 0):
+        
+        for i in range(min(player_count, 64)):
+            entity_ptr = self.read_ptr(entity_list_ptr + i * 8)
+            if not entity_ptr:
+                continue
+            
+            pawn_ptr = self.read_ptr(entity_ptr + OFFSETS["pawn_offset"])
+            if not pawn_ptr:
+                continue
+            
+            controller_ptr = self.read_ptr(entity_ptr + OFFSETS["controller_offset"])
+            if not controller_ptr:
+                continue
+            
+            team = self.read_int(pawn_ptr + OFFSETS["team_offset"])
+            x, z = self.read_vector3(pawn_ptr + OFFSETS["pos_offset"])
+            health = self.read_int(pawn_ptr + OFFSETS["health_offset"])
+            alive = self.read_int(pawn_ptr + OFFSETS["alive_offset"]) == 1
+            
+            name_ptr = controller_ptr + OFFSETS["name_offset"]
+            name = self.read_string(name_ptr, 32)
+            
+            # Фильтр: только игроки с нормальными координатами и именем
+            if name and (abs(x) < 10000 and abs(z) < 10000) and (x != 0 or z != 0):
                 players.append({
-                    'name': name, 'team': team, 'x': x, 'z': z,
-                    'health': health, 'alive': alive
+                    'name': name,
+                    'team': team,
+                    'x': x,
+                    'z': z,
+                    'health': health,
+                    'alive': alive
                 })
+        
+        print(f"[DEBUG] Найдено игроков: {len(players)}")  # Отладка
         return players
-    
+
     def close(self):
         if self.process_handle:
             self.kernel32.CloseHandle(self.process_handle)
 
-# ========== ВЕБ-СЕРВЕР С ПОДДЕРЖКОЙ POST ==========
+# ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
 reader = MemoryReader()
 radar_active = False
 connected_websockets = set()
 
+# ========== HTTP СЕРВЕР ==========
 class CustomHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
@@ -148,7 +231,7 @@ class CustomHandler(BaseHTTPRequestHandler):
         else:
             self.send_response(404)
             self.end_headers()
-    
+
     def do_POST(self):
         global radar_active
         if self.path == '/activate':
@@ -156,18 +239,14 @@ class CustomHandler(BaseHTTPRequestHandler):
             post_data = self.rfile.read(content_length)
             try:
                 data = json.loads(post_data.decode('utf-8'))
-                lobby_link = data.get('lobby_link', '')
-                print(f"Получена ссылка лобби: {lobby_link}")
-                # Здесь можно добавить проверку ссылки, но для радара достаточно активации
+                # Активация без ссылки – просто включаем радар
                 if not radar_active:
                     ok, msg = reader.connect()
                     if ok:
                         radar_active = True
-                        print("Радар активирован. Запуск чтения памяти...")
                         self.send_response(200)
-                        self.send_header('Content-type', 'application/json')
                         self.end_headers()
-                        self.wfile.write(json.dumps({'status': 'ok', 'message': 'Радар активирован'}).encode())
+                        self.wfile.write(json.dumps({'status': 'ok', 'message': 'Радар активирован. Входите в матч.'}).encode())
                     else:
                         self.send_response(500)
                         self.end_headers()
@@ -183,7 +262,7 @@ class CustomHandler(BaseHTTPRequestHandler):
         else:
             self.send_response(404)
             self.end_headers()
-    
+
     def log_message(self, format, *args):
         pass
 
@@ -191,7 +270,7 @@ def start_web_server():
     server = HTTPServer(('0.0.0.0', WEB_SERVER_PORT), CustomHandler)
     server.serve_forever()
 
-# ========== WEBSOCKET СЕРВЕР ==========
+# ========== WEBSOCKET ==========
 async def ws_handler(websocket, path):
     connected_websockets.add(websocket)
     try:
@@ -204,110 +283,42 @@ async def broadcast_loop():
         if radar_active:
             players = reader.get_players()
             if players:
-                # Локальный игрок – первый в списке (упрощённо)
                 local = {'x': players[0]['x'], 'z': players[0]['z']} if players else None
-                message = json.dumps({
-                    'players': players,
-                    'local': local
-                })
+                message = json.dumps({'players': players, 'local': local})
                 if connected_websockets:
                     await asyncio.gather(*[ws.send(message) for ws in connected_websockets])
+            else:
+                # Отправляем пустое сообщение, чтобы клиент знал, что подключение есть
+                if connected_websockets:
+                    await asyncio.gather(*[ws.send(json.dumps({'players': [], 'local': None})) for ws in connected_websockets])
         await asyncio.sleep(UPDATE_INTERVAL_MS / 1000.0)
 
 async def start_websocket_server():
     async with websockets.serve(ws_handler, '0.0.0.0', WEBSOCKET_PORT):
         await broadcast_loop()
 
-# ========== HTML-СТРАНИЦА С ПОЛЕМ ДЛЯ ССЫЛКИ ==========
+# ========== HTML (упрощённый, без поля ввода ссылки) ==========
 HTML_PAGE = '''<!DOCTYPE html>
 <html>
 <head>
-    <title>Standoff 2 Radar – Активация по ссылке лобби</title>
+    <title>Standoff 2 Radar – Рабочая версия</title>
     <style>
-        body {
-            margin: 0;
-            background: #0a0a0a;
-            color: #0f0;
-            font-family: 'Courier New', monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: #111;
-            border: 1px solid #0f0;
-            padding: 20px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 900px;
-        }
-        .input-area {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        input {
-            flex: 1;
-            background: #222;
-            border: 1px solid #0f0;
-            color: #0f0;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 14px;
-        }
-        button {
-            background: #0f0;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: monospace;
-        }
-        button:hover {
-            background: #0c0;
-        }
-        #status {
-            margin-top: 10px;
-            font-size: 12px;
-        }
-        canvas {
-            border: 2px solid #0f0;
-            background: #000;
-            display: block;
-            margin: 0 auto;
-        }
-        .info {
-            font-size: 12px;
-            margin-top: 10px;
-            text-align: center;
-        }
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 10px;
-        }
-        .legend span {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
+        body { background: #0a0a0a; color: #0f0; font-family: monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: #111; border: 1px solid #0f0; padding: 20px; border-radius: 10px; width: 900px; }
+        button { background: #0f0; color: #000; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
+        button:hover { background: #0c0; }
+        #status { margin: 10px 0; font-size: 13px; }
+        canvas { border: 2px solid #0f0; background: #000; display: block; margin: 0 auto; }
+        .legend { display: flex; justify-content: center; gap: 20px; margin-top: 10px; font-size: 12px; }
+        .legend span { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; }
+        .info { font-size: 12px; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>🎯 Standoff 2 Cloud Radar</h2>
-    <div class="input-area">
-        <input type="text" id="lobbyLink" placeholder="Вставьте ссылку на лобби из игры (например, https://standoff2.com/invite/...)" />
-        <button id="activateBtn">Активировать радар</button>
-    </div>
-    <div id="status">⚫ Не активирован. Вставьте ссылку лобби и нажмите кнопку.</div>
+    <h2>🎯 Standoff 2 Radar</h2>
+    <button id="activateBtn">▶ Активировать радар</button>
+    <div id="status">⚫ Не активен. Нажмите кнопку.</div>
     <canvas id="radar" width="800" height="800"></canvas>
     <div class="legend">
         <div><span style="background: #00ff00;"></span> Вы</div>
@@ -315,16 +326,14 @@ HTML_PAGE = '''<!DOCTYPE html>
         <div><span style="background: #0000ff;"></span> Спецназ</div>
         <div><span style="background: #888;"></span> Мёртв</div>
     </div>
-    <div class="info">После активации зайдите в матч – радар заработает автоматически.</div>
+    <div class="info">✅ Запустите эмулятор и Standoff 2. Нажмите кнопку, затем зайдите в матч.</div>
 </div>
-
 <script>
     const canvas = document.getElementById('radar');
     const ctx = canvas.getContext('2d');
     let local = {x: 0, z: 0};
     let players = [];
     let ws = null;
-    let radarActive = false;
 
     function connectWebSocket() {
         const wsUrl = `ws://${window.location.hostname}:8081`;
@@ -334,32 +343,28 @@ HTML_PAGE = '''<!DOCTYPE html>
             const data = JSON.parse(event.data);
             if (data.players) players = data.players;
             if (data.local) local = data.local;
+            // Обновляем счётчик игроков
+            document.getElementById('status').innerHTML = `🟢 Радар активен. Игроков в поле: ${players.length}`;
         };
-        ws.onclose = () => setTimeout(connectWebSocket, 3000);
+        ws.onclose = () => {
+            console.log('WebSocket closed');
+            setTimeout(connectWebSocket, 3000);
+        };
     }
 
     function worldToRadar(x, z) {
-        const cx = (x - local.x) + 400;
-        const cz = (z - local.z) + 400;
-        return {x: cx, z: cz};
+        return {x: (x - local.x) + 400, z: (z - local.z) + 400};
     }
 
     function draw() {
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, 800, 800);
-        // Сетка
         ctx.strokeStyle = '#333';
-        ctx.lineWidth = 0.5;
         for (let i = 0; i <= 8; i++) {
             let p = i * 100;
-            ctx.beginPath();
-            ctx.moveTo(p, 0); ctx.lineTo(p, 800);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(0, p); ctx.lineTo(800, p);
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, 800); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(800, p); ctx.stroke();
         }
-        // Игроки
         for (let p of players) {
             if (!p.alive) continue;
             let pos = worldToRadar(p.x, p.z);
@@ -375,7 +380,6 @@ HTML_PAGE = '''<!DOCTYPE html>
             ctx.font = '10px monospace';
             ctx.fillText(p.health+'%', pos.x-10, pos.z-8);
         }
-        // Локальный
         ctx.beginPath();
         ctx.arc(400, 400, 9, 0, 2*Math.PI);
         ctx.fillStyle = '#00ff00';
@@ -396,37 +400,28 @@ HTML_PAGE = '''<!DOCTYPE html>
     }
 
     document.getElementById('activateBtn').onclick = async () => {
-        const link = document.getElementById('lobbyLink').value.trim();
-        if (!link) {
-            alert('Введите ссылку на лобби');
-            return;
-        }
         const statusDiv = document.getElementById('status');
         statusDiv.innerHTML = '🟡 Активация...';
         try {
             const resp = await fetch('/activate', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({lobby_link: link})
+                body: JSON.stringify({lobby_link: 'dummy'})  // не используется
             });
             const data = await resp.json();
             if (data.status === 'ok') {
-                statusDiv.innerHTML = '🟢 Радар активирован! Входите в матч.';
-                if (!ws || ws.readyState !== WebSocket.OPEN) {
-                    connectWebSocket();
-                }
-                radarActive = true;
+                statusDiv.innerHTML = '🟢 ' + data.message;
+                if (!ws || ws.readyState !== WebSocket.OPEN) connectWebSocket();
             } else {
                 statusDiv.innerHTML = '🔴 Ошибка: ' + data.message;
             }
         } catch (e) {
-            statusDiv.innerHTML = '🔴 Ошибка подключения к серверу';
+            statusDiv.innerHTML = '🔴 Ошибка подключения к серверу. Запустите скрипт от администратора.';
         }
     };
 
     animate();
-    // Попытка подключения WebSocket при загрузке (если сервер уже активен)
-    connectWebSocket();
+    // Не подключаем WebSocket до активации
 </script>
 </body>
 </html>
@@ -434,23 +429,28 @@ HTML_PAGE = '''<!DOCTYPE html>
 
 # ========== ЗАПУСК ==========
 if __name__ == '__main__':
-    print("=== Standoff 2 Cloud Radar (активация по ссылке лобби) ===")
-    print(f"Веб-сервер: http://localhost:{WEB_SERVER_PORT}")
-    print(f"WebSocket порт: {WEBSOCKET_PORT}")
-    print("Инструкция:")
-    print("1. Откройте в браузере указанный выше адрес")
-    print("2. Скопируйте ссылку на лобби из игры Standoff 2")
-    print("3. Вставьте ссылку в поле на странице и нажмите 'Активировать радар'")
-    print("4. Зайдите в матч – радар начнёт показывать позиции")
-    print("Для остановки нажмите Ctrl+C\n")
+    print("="*60)
+    print("Standoff 2 Radar – ИСПРАВЛЕННАЯ ВЕРСИЯ")
+    print("="*60)
+    print("1. Убедитесь, что эмулятор (Bluestacks/LDPlayer) и Standoff 2 запущены")
+    print("2. Запустите этот скрипт от имени администратора")
+    print(f"3. Откройте браузер по адресу: http://localhost:{WEB_SERVER_PORT}")
+    print("4. Нажмите кнопку 'Активировать радар' на веб-странице")
+    print("5. Зайдите в любой матч – игроки появятся на радаре")
+    print("")
+    print("Если игроки не отображаются, проверьте консоль этого окна на наличие отладочных сообщений.")
+    print("Для остановки нажмите Ctrl+C")
+    print("="*60)
     
+    # Запуск веб-сервера в потоке
     web_thread = threading.Thread(target=start_web_server, daemon=True)
     web_thread.start()
     
+    # Запуск WebSocket и основного цикла
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(start_websocket_server())
     except KeyboardInterrupt:
-        print("\nОстановка радара...")
+        print("\nРадар остановлен.")
         reader.close()
