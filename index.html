@@ -1,37 +1,16 @@
 """
-Standoff 2 Cloud Radar – ПОЛНОСТЬЮ РАБОТАЕТ
-- Поле для ввода ссылки лобби (matchmaking)
-- Автоматическое открытие ссылки через ADB в эмуляторе
-- Чтение памяти и отображение игроков на веб-радаре
-
-ИНСТРУКЦИЯ:
-1. Запустить эмулятор (Bluestacks / LDPlayer) и игру Standoff 2
-2. В эмуляторе включить отладку по USB
-3. Установить ADB или скопировать adb.exe в папку со скриптом
-4. Запустить этот скрипт от имени администратора
-5. Открыть браузер по адресу http://localhost:8080
-6. Вставить ссылку-приглашение из игры в поле
-7. Нажать "Присоединиться и активировать радар"
-8. После входа в матч радар покажет всех игроков
+Standoff 2 Radar – ОТЛАДОЧНАЯ ВЕРСИЯ
+Выводит в консоль: найденные процессы, смещения, количество игроков, их координаты.
 """
 
-import asyncio
-import websockets
-import json
 import ctypes
 from ctypes import wintypes, byref, create_string_buffer
 import psutil
 import struct
-import threading
-import subprocess
-from http.server import HTTPServer, BaseHTTPRequestHandler
+import time
+import sys
 
-# ========== НАСТРОЙКИ ==========
-WEB_PORT = 8080
-WS_PORT = 8081
-UPDATE_MS = 50
-
-# Смещения для Standoff 2 (версия 0.38.2 – при обновлении игры заменить)
+# ========== НАСТРОЙКИ (СМЕЩЕНИЯ ДЛЯ VERSION 0.38.2) ==========
 OFFSETS = {
     "entity_list": 0x06B2A1F8,
     "player_count": 0x06B2A1FC,
@@ -44,30 +23,6 @@ OFFSETS = {
     "alive_offset": 0x748,
 }
 
-# ========== ADB ДЛЯ ОТКРЫТИЯ ССЫЛКИ ==========
-def open_lobby_link(link):
-    link = link.strip()
-    if not link:
-        return False, "Ссылка пуста"
-    # Находим устройство ADB
-    result = subprocess.run(['adb', 'devices'], capture_output=True, text=True)
-    lines = result.stdout.strip().split('\n')[1:]
-    device = None
-    for line in lines:
-        if 'device' in line:
-            device = line.split('\t')[0]
-            break
-    if not device:
-        return False, "ADB не видит устройство. Убедитесь, что эмулятор запущен и отладка включена."
-    # Отправляем Intent
-    cmd = ['adb', '-s', device, 'shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', link]
-    try:
-        subprocess.run(cmd, check=True, timeout=5, capture_output=True)
-        return True, f"Ссылка отправлена на {device}"
-    except Exception as e:
-        return False, f"Ошибка ADB: {str(e)}"
-
-# ========== ЧТЕНИЕ ПАМЯТИ ==========
 class MemoryReader:
     def __init__(self):
         self.handle = None
@@ -76,22 +31,31 @@ class MemoryReader:
         self.kernel32.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
         self.kernel32.OpenProcess.restype = wintypes.HANDLE
         self.kernel32.ReadProcessMemory.argtypes = (wintypes.HANDLE, wintypes.LPCVOID, wintypes.LPVOID, ctypes.c_size_t, ctypes.POINTER(ctypes.c_size_t))
-        self.kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
+        self.kernel32.ReadProcessMemory.restype = wintypes.BOOL
 
     def connect(self):
-        targets = ['HD-Player.exe', 'LdVBoxHeadless.exe', 'MuMuVMMHeadless.exe']
+        # Поиск процесса эмулятора
+        targets = ['HD-Player.exe', 'LdVBoxHeadless.exe', 'MuMuVMMHeadless.exe', 'NemuHeadless.exe']
         pid = None
         for proc in psutil.process_iter(['pid', 'name']):
             if proc.info['name'] in targets:
                 pid = proc.info['pid']
+                print(f"[+] Найден процесс: {proc.info['name']} PID={pid}")
                 break
         if not pid:
-            return False, "Эмулятор не запущен"
+            print("[-] Эмулятор не запущен!")
+            return False
+        
+        # Открываем процесс
         self.handle = self.kernel32.OpenProcess(0x0010, False, pid)
         if not self.handle:
-            return False, "Нет доступа. Запустите скрипт от администратора."
-        self.base = 0x140000000  # Базовый адрес для 64-бит
-        return True, "OK"
+            print("[-] Не удалось открыть процесс. Запустите от администратора.")
+            return False
+        
+        # Базовый адрес (обычно 0x140000000 для 64-бит)
+        self.base = 0x140000000
+        print(f"[+] Подключено к процессу, база = 0x{self.base:X}")
+        return True
 
     def read_ptr(self, addr):
         buf = ctypes.c_uint64()
@@ -127,12 +91,13 @@ class MemoryReader:
 
     def get_players(self):
         players = []
-        if not self.handle:
-            return players
+        # Читаем entity_list и player_count
         ent_list = self.read_ptr(self.base + OFFSETS["entity_list"])
         count = self.read_int(self.base + OFFSETS["player_count"])
+        print(f"[DEBUG] entity_list = 0x{ent_list:X}, player_count = {count}")
         if not ent_list or count <= 0:
             return players
+        
         for i in range(min(count, 64)):
             ent = self.read_ptr(ent_list + i * 8)
             if not ent:
@@ -141,244 +106,41 @@ class MemoryReader:
             ctrl = self.read_ptr(ent + OFFSETS["controller_offset"])
             if not pawn or not ctrl:
                 continue
+            
             team = self.read_int(pawn + OFFSETS["team_offset"])
             health = self.read_int(pawn + OFFSETS["health_offset"])
             alive = self.read_int(pawn + OFFSETS["alive_offset"]) == 1
             x, z = self.read_vector2(pawn + OFFSETS["pos_offset"])
             name = self.read_string(ctrl + OFFSETS["name_offset"], 32)
-            if name and (abs(x) < 10000 and abs(z) < 10000) and (x != 0 or z != 0):
-                players.append({'name': name, 'team': team, 'x': x, 'z': z, 'health': health, 'alive': alive})
+            
+            if name:
+                print(f"  Игрок {i}: name='{name}', team={team}, pos=({x:.1f},{z:.1f}), health={health}, alive={alive}")
+                if (abs(x) < 10000 and abs(z) < 10000) and (x != 0 or z != 0):
+                    players.append({'name': name, 'team': team, 'x': x, 'z': z, 'health': health, 'alive': alive})
         return players
 
     def close(self):
         if self.handle:
             self.kernel32.CloseHandle(self.handle)
 
-# ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
-reader = MemoryReader()
-radar_active = False
-websocket_clients = set()
-
-# ========== HTTP СЕРВЕР (с HTML, содержащим поле для ссылки) ==========
-HTML = '''<!DOCTYPE html>
-<html>
-<head>
-    <title>Standoff 2 Cloud Radar</title>
-    <style>
-        body { background:#000; color:#0f0; font-family:monospace; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0; }
-        .container { background:#111; border:2px solid #0f0; padding:20px; border-radius:15px; width:950px; }
-        .input-area { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
-        input { flex:3; background:#222; border:1px solid #0f0; color:#0f0; padding:12px; font-size:14px; font-family:monospace; border-radius:5px; }
-        button { background:#0f0; color:#000; border:none; padding:12px 25px; font-weight:bold; cursor:pointer; font-size:16px; border-radius:5px; }
-        button:hover { background:#0c0; }
-        #status { background:#000; border-left:4px solid #0f0; padding:10px; margin:15px 0; font-size:14px; }
-        canvas { border:2px solid #0f0; background:#000; display:block; margin:0 auto; border-radius:5px; }
-        .legend { display:flex; justify-content:center; gap:25px; margin-top:15px; font-size:13px; }
-        .legend span { display:inline-block; width:14px; height:14px; border-radius:50%; margin-right:6px; }
-        .info { text-align:center; margin-top:15px; font-size:12px; color:#aaa; }
-        h2 { text-align:center; margin-top:0; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h2>🎯 Standoff 2 Cloud Radar</h2>
-    <div class="input-area">
-        <input type="text" id="lobbyLink" placeholder="Вставьте сюда ссылку-приглашение из игры (например, https://standoff2.com/invite/abc123)" />
-        <button id="activateBtn">🚀 Присоединиться и активировать радар</button>
-    </div>
-    <div id="status">⚫ Ожидание. Вставьте ссылку лобби и нажмите кнопку.</div>
-    <canvas id="radar" width="800" height="800"></canvas>
-    <div class="legend">
-        <div><span style="background:#00ff00;"></span> Вы</div>
-        <div><span style="background:#ff0000;"></span> Террористы</div>
-        <div><span style="background:#0000ff;"></span> Спецназ</div>
-        <div><span style="background:#888;"></span> Мёртв</div>
-    </div>
-    <div class="info">✅ После нажатия кнопки эмулятор откроет ссылку. Зайдите в матч – радар покажет всех игроков.</div>
-</div>
-<script>
-    const canvas = document.getElementById('radar');
-    const ctx = canvas.getContext('2d');
-    let local = {x:0, z:0};
-    let players = [];
-    let ws = null;
-
-    function connectWebSocket() {
-        const url = `ws://${window.location.hostname}:8081`;
-        ws = new WebSocket(url);
-        ws.onopen = () => console.log('WebSocket connected');
-        ws.onmessage = (e) => {
-            const data = JSON.parse(e.data);
-            if (data.players) players = data.players;
-            if (data.local) local = data.local;
-            document.getElementById('status').innerHTML = `🟢 Радар активен. Игроков в поле: ${players.length}`;
-        };
-        ws.onclose = () => setTimeout(connectWebSocket, 3000);
-    }
-
-    function worldToRadar(x, z) {
-        return {x: (x - local.x) + 400, z: (z - local.z) + 400};
-    }
-
-    function draw() {
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, 800, 800);
-        ctx.strokeStyle = '#333';
-        for (let i=0; i<=8; i++) { let p=i*100; ctx.beginPath(); ctx.moveTo(p,0); ctx.lineTo(p,800); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,p); ctx.lineTo(800,p); ctx.stroke(); }
-        for (let p of players) {
-            if (!p.alive) continue;
-            let pos = worldToRadar(p.x, p.z);
-            if (pos.x<-50 || pos.x>850 || pos.z<-50 || pos.z>850) continue;
-            let color = p.team===1 ? '#ff0000' : (p.team===2 ? '#0000ff' : '#fff');
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.z, 6, 0, 2*Math.PI);
-            ctx.fillStyle = color;
-            ctx.fill();
-            ctx.strokeStyle = '#fff';
-            ctx.stroke();
-            ctx.fillStyle = '#fff';
-            ctx.font = '10px monospace';
-            ctx.fillText(p.health+'%', pos.x-10, pos.z-8);
-        }
-        ctx.beginPath();
-        ctx.arc(400, 400, 9, 0, 2*Math.PI);
-        ctx.fillStyle = '#00ff00';
-        ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(400, 382);
-        ctx.lineTo(394, 394);
-        ctx.lineTo(406, 394);
-        ctx.fillStyle = '#0f0';
-        ctx.fill();
-        requestAnimationFrame(draw);
-    }
-
-    document.getElementById('activateBtn').onclick = async () => {
-        const link = document.getElementById('lobbyLink').value.trim();
-        if (!link) { alert('Вставьте ссылку лобби'); return; }
-        const statusDiv = document.getElementById('status');
-        statusDiv.innerHTML = '🟡 Отправка ссылки в эмулятор и активация...';
-        try {
-            const resp = await fetch('/activate', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({lobby_link: link})
-            });
-            const data = await resp.json();
-            if (data.status === 'ok') {
-                statusDiv.innerHTML = '🟢 ' + data.message;
-                if (!ws || ws.readyState !== WebSocket.OPEN) connectWebSocket();
-            } else {
-                statusDiv.innerHTML = '🔴 Ошибка: ' + data.message;
-            }
-        } catch(err) {
-            statusDiv.innerHTML = '🔴 Ошибка соединения. Убедитесь, что скрипт запущен от администратора.';
-        }
-    };
-    draw();
-</script>
-</body>
-</html>
-'''
-
-class HTTPHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == '/':
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write(HTML.encode())
-        else:
-            self.send_response(404)
-            self.end_headers()
-    def do_POST(self):
-        global radar_active
-        if self.path == '/activate':
-            length = int(self.headers['Content-Length'])
-            data = json.loads(self.rfile.read(length).decode())
-            link = data.get('lobby_link', '')
-            # Открыть ссылку через ADB
-            ok, msg = open_lobby_link(link)
-            if not ok:
-                self.send_response(500)
-                self.end_headers()
-                self.wfile.write(json.dumps({'status':'error','message':msg}).encode())
-                return
-            # Подключиться к памяти, если ещё не активно
-            if not radar_active:
-                ok2, msg2 = reader.connect()
-                if ok2:
-                    radar_active = True
-                    self.send_response(200)
-                    self.end_headers()
-                    self.wfile.write(json.dumps({'status':'ok','message':f'Ссылка отправлена. Радар активирован. Входите в матч.'}).encode())
-                else:
-                    self.send_response(500)
-                    self.end_headers()
-                    self.wfile.write(json.dumps({'status':'error','message':msg2}).encode())
-            else:
-                self.send_response(200)
-                self.end_headers()
-                self.wfile.write(json.dumps({'status':'ok','message':'Радар уже активен'}).encode())
-        else:
-            self.send_response(404)
-            self.end_headers()
-    def log_message(self, fmt, *args):
-        pass
-
-def run_web():
-    HTTPServer(('0.0.0.0', WEB_PORT), HTTPHandler).serve_forever()
-
-# ========== WEBSOCKET ==========
-async def ws_handler(ws, path):
-    websocket_clients.add(ws)
-    try:
-        await ws.wait_closed()
-    finally:
-        websocket_clients.remove(ws)
-
-async def broadcast_loop():
-    while True:
-        if radar_active:
-            players = reader.get_players()
-            if players:
-                local = {'x': players[0]['x'], 'z': players[0]['z']}
-                msg = json.dumps({'players': players, 'local': local})
-                if websocket_clients:
-                    await asyncio.gather(*[c.send(msg) for c in websocket_clients])
-            elif websocket_clients:
-                await asyncio.gather(*[c.send(json.dumps({'players':[], 'local':None})) for c in websocket_clients])
-        await asyncio.sleep(UPDATE_MS / 1000.0)
-
-async def run_ws():
-    async with websockets.serve(ws_handler, '0.0.0.0', WS_PORT):
-        await broadcast_loop()
-
-# ========== ЗАПУСК ==========
-if __name__ == '__main__':
-    print("\n" + "="*70)
-    print("STANDOFF 2 CLOUD RADAR – ПОЛНОСТЬЮ РАБОТАЕТ")
-    print("="*70)
-    print("1. Запустите эмулятор (Bluestacks/LDPlayer) и откройте Standoff 2")
-    print("2. В эмуляторе включите отладку по USB")
-    print("3. Запустите этот скрипт от имени администратора")
-    print(f"4. Откройте браузер по адресу: http://localhost:{WEB_PORT}")
-    print("5. Скопируйте ссылку-приглашение из игры (кнопка 'Пригласить' или из чата)")
-    print("6. Вставьте ссылку в поле на веб-странице и нажмите кнопку")
-    print("7. Эмулятор откроет ссылку, вы попадёте в лобби")
-    print("8. Когда начнётся матч – радар покажет всех игроков")
-    print("\nЕсли радар не показывает игроков – обновите смещения в OFFSETS под вашу версию игры.")
-    print("Для остановки нажмите Ctrl+C")
-    print("="*70 + "\n")
+def main():
+    print("=== Отладка чтения памяти Standoff 2 ===\n")
+    reader = MemoryReader()
+    if not reader.connect():
+        input("Нажмите Enter для выхода...")
+        return
     
-    web_thread = threading.Thread(target=run_web, daemon=True)
-    web_thread.start()
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    print("\nЧтение данных каждые 2 секунды. Находясь в матче, смотрите вывод.")
+    print("Если игроки не появляются – обновите смещения.\n")
     try:
-        loop.run_until_complete(run_ws())
+        while True:
+            players = reader.get_players()
+            print(f"--- Всего получено игроков: {len(players)} ---\n")
+            time.sleep(2)
     except KeyboardInterrupt:
-        print("\nОстановка...")
+        print("\nЗавершение.")
+    finally:
         reader.close()
+
+if __name__ == "__main__":
+    main()
