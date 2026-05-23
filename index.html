@@ -1,307 +1,223 @@
-import asyncio
-import websockets
-import json
-import ctypes
-from ctypes import wintypes, byref, create_string_buffer
-import psutil
-import struct
-import threading
-import subprocess
-from http.server import HTTPServer, BaseHTTPRequestHandler
-
-WEB_PORT = 8080
-WS_PORT = 8081
-UPDATE_MS = 50
-
-OFFSETS = {
-    "entity_list": 0x06B2A1F8,
-    "player_count": 0x06B2A1FC,
-    "pawn_offset": 0x118,
-    "controller_offset": 0x220,
-    "name_offset": 0x328,
-    "team_offset": 0x430,
-    "pos_offset": 0x538,
-    "health_offset": 0x640,
-    "alive_offset": 0x748,
-}
-
-def open_lobby_link(link):
-    link = link.strip()
-    if not link:
-        return False, "Ссылка пуста"
-    result = subprocess.run(['adb', 'devices'], capture_output=True, text=True)
-    lines = result.stdout.strip().split('\n')[1:]
-    device = None
-    for line in lines:
-        if 'device' in line:
-            device = line.split('\t')[0]
-            break
-    if not device:
-        return False, "ADB не видит эмулятор. Включите отладку по USB."
-    cmd = ['adb', '-s', device, 'shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', link]
-    try:
-        subprocess.run(cmd, check=True, timeout=5, capture_output=True)
-        return True, f"Ссылка отправлена на {device}"
-    except Exception as e:
-        return False, f"Ошибка ADB: {str(e)}"
-
-class MemoryReader:
-    def __init__(self):
-        self.handle = None
-        self.base = 0
-        self.kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-        self.kernel32.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
-        self.kernel32.OpenProcess.restype = wintypes.HANDLE
-        self.kernel32.ReadProcessMemory.argtypes = (wintypes.HANDLE, wintypes.LPCVOID, wintypes.LPVOID, ctypes.c_size_t, ctypes.POINTER(ctypes.c_size_t))
-    def connect(self):
-        targets = ['HD-Player.exe', 'LdVBoxHeadless.exe', 'MuMuVMMHeadless.exe']
-        pid = None
-        for proc in psutil.process_iter(['pid', 'name']):
-            if proc.info['name'] in targets:
-                pid = proc.info['pid']
-                break
-        if not pid:
-            return False, "Эмулятор не запущен"
-        self.handle = self.kernel32.OpenProcess(0x0010, False, pid)
-        if not self.handle:
-            return False, "Нет доступа. Запустите от администратора."
-        self.base = 0x140000000
-        return True, "OK"
-    def read_ptr(self, addr):
-        buf = ctypes.c_uint64()
-        br = ctypes.c_size_t()
-        if self.kernel32.ReadProcessMemory(self.handle, addr, byref(buf), 8, byref(br)):
-            return buf.value
-        return 0
-    def read_int(self, addr):
-        buf = ctypes.c_int()
-        br = ctypes.c_size_t()
-        if self.kernel32.ReadProcessMemory(self.handle, addr, byref(buf), 4, byref(br)):
-            return buf.value
-        return 0
-    def read_vector2(self, addr):
-        buf = create_string_buffer(8)
-        br = ctypes.c_size_t()
-        if self.kernel32.ReadProcessMemory(self.handle, addr, buf, 8, byref(br)):
-            x, z = struct.unpack('ff', buf.raw)
-            return (x, z)
-        return (0.0, 0.0)
-    def read_string(self, addr, maxlen=32):
-        buf = create_string_buffer(maxlen)
-        br = ctypes.c_size_t()
-        if self.kernel32.ReadProcessMemory(self.handle, addr, buf, maxlen, byref(br)):
-            return buf.value.decode('utf-8', errors='ignore').split('\x00')[0]
-        return ""
-    def get_players(self):
-        players = []
-        if not self.handle:
-            return players
-        ent_list = self.read_ptr(self.base + OFFSETS["entity_list"])
-        count = self.read_int(self.base + OFFSETS["player_count"])
-        if not ent_list or count <= 0:
-            return players
-        for i in range(min(count, 64)):
-            ent = self.read_ptr(ent_list + i * 8)
-            if not ent: continue
-            pawn = self.read_ptr(ent + OFFSETS["pawn_offset"])
-            ctrl = self.read_ptr(ent + OFFSETS["controller_offset"])
-            if not pawn or not ctrl: continue
-            team = self.read_int(pawn + OFFSETS["team_offset"])
-            health = self.read_int(pawn + OFFSETS["health_offset"])
-            alive = self.read_int(pawn + OFFSETS["alive_offset"]) == 1
-            x, z = self.read_vector2(pawn + OFFSETS["pos_offset"])
-            name = self.read_string(ctrl + OFFSETS["name_offset"], 32)
-            if name and (abs(x) < 10000 and abs(z) < 10000) and (x != 0 or z != 0):
-                players.append({'name':name,'team':team,'x':x,'z':z,'health':health,'alive':alive})
-        return players
-    def close(self):
-        if self.handle:
-            self.kernel32.CloseHandle(self.handle)
-
-reader = MemoryReader()
-radar_active = False
-clients = set()
-
-HTML_PAGE = '''<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-<head><title>Standoff 2 Radar</title>
-<style>
-body{background:#000;color:#0f0;font-family:monospace;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
-.container{background:#111;border:2px solid #0f0;padding:20px;border-radius:15px;width:950px;}
-.input-area{display:flex;gap:10px;margin-bottom:20px;}
-input{flex:3;background:#222;border:1px solid #0f0;color:#0f0;padding:12px;font-family:monospace;}
-button{background:#0f0;color:#000;border:none;padding:12px 25px;font-weight:bold;cursor:pointer;}
-#status{background:#000;border-left:4px solid #0f0;padding:10px;margin:15px 0;}
-canvas{border:2px solid #0f0;background:#000;display:block;margin:0 auto;}
-.legend{display:flex;justify-content:center;gap:25px;margin-top:15px;}
-.legend span{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:6px;}
-</style>
+<head>
+    <meta charset="UTF-8">
+    <title>Standoff 2 Radar</title>
+    <style>
+        body {
+            background-color: #0a0f1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .radar-container {
+            background: #1a1f2e;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            border: 1px solid #2a3f5e;
+        }
+        canvas {
+            background: #0f1422;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 0 0 2px #2a3f5e, 0 0 0 5px #0f1422;
+        }
+        .info {
+            text-align: center;
+            margin-top: 15px;
+            color: #7aa2f7;
+            font-weight: bold;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 15px;
+        }
+        button {
+            background: #2a3f5e;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        button:hover {
+            background: #3a5f8e;
+        }
+        input {
+            background: #0f1422;
+            border: 1px solid #2a3f5e;
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            width: 250px;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-<h2>Standoff 2 Cloud Radar</h2>
-<div class="input-area">
-<input type="text" id="lobbyLink" placeholder="Вставьте ссылку-приглашение из игры" />
-<button id="activateBtn">Присоединиться и активировать</button>
+<div class="radar-container">
+    <canvas id="radarCanvas" width="500" height="500"></canvas>
+    <div class="info">
+        <div id="playerCount">Игроков на радаре: 0</div>
+        <div class="controls" style="margin-top: 10px;">
+            <input type="text" id="lobbyLink" placeholder="Вставьте ссылку лобби здесь" style="width: 300px;">
+            <button id="activateBtn">Активировать радар</button>
+            <button id="testBtn">Тестовые данные</button>
+        </div>
+        <div style="font-size: 12px; margin-top: 10px;">
+            🟢 Вы &nbsp;|&nbsp; 🔴 Террористы &nbsp;|&nbsp; 🔵 Спецназ
+        </div>
+    </div>
 </div>
-<div id="status">Ожидание ссылки</div>
-<canvas id="radar" width="800" height="800"></canvas>
-<div class="legend">
-<div><span style="background:#0f0;"></span> Вы</div>
-<div><span style="background:#f00;"></span> Террористы</div>
-<div><span style="background:#00f;"></span> Спецназ</div>
-</div>
-</div>
+
 <script>
-const canvas=document.getElementById('radar');
-const ctx=canvas.getContext('2d');
-let local={x:0,z:0};
-let players=[];
-let ws=null;
-function connectWS(){
-    ws=new WebSocket(`ws://${location.hostname}:8081`);
-    ws.onmessage=(e)=>{
-        let d=JSON.parse(e.data);
-        if(d.players)players=d.players;
-        if(d.local)local=d.local;
-        document.getElementById('status').innerHTML=`Радар активен. Игроков: ${players.length}`;
-    };
-    ws.onclose=()=>setTimeout(connectWS,3000);
-}
-function worldToRadar(x,z){return{x:(x-local.x)+400,z:(z-local.z)+400};}
-function draw(){
-    ctx.fillStyle='#000';
-    ctx.fillRect(0,0,800,800);
-    ctx.strokeStyle='#333';
-    for(let i=0;i<=8;i++){let p=i*100;ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,800);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(800,p);ctx.stroke();}
-    for(let p of players){
-        if(!p.alive)continue;
-        let pos=worldToRadar(p.x,p.z);
-        if(pos.x<-50||pos.x>850||pos.z<-50||pos.z>850)continue;
-        let color=p.team===1?'#f00':(p.team===2?'#00f':'#fff');
-        ctx.beginPath();
-        ctx.arc(pos.x,pos.z,6,0,2*Math.PI);
-        ctx.fillStyle=color;
-        ctx.fill();
-        ctx.strokeStyle='#fff';
-        ctx.stroke();
-        ctx.fillStyle='#fff';
-        ctx.fillText(p.health+'%',pos.x-10,pos.z-8);
+    const canvas = document.getElementById('radarCanvas');
+    const ctx = canvas.getContext('2d');
+    const size = 500;
+    const center = size / 2;
+    
+    let players = [
+        // Демо-данные: x, y, команда (1 - терр, 2 - спецназ), здоровье
+        {x: 120, z: 100, team: 1, health: 100, alive: true},
+        {x: -80, z: 150, team: 1, health: 75, alive: true},
+        {x: 200, z: -50, team: 2, health: 100, alive: true},
+        {x: -150, z: -120, team: 2, health: 45, alive: true},
+        {x: 50, z: 80, team: 1, health: 30, alive: true}
+    ];
+    
+    let localPlayer = {x: 0, z: 0};
+    let radarActive = false;
+    
+    function worldToRadar(worldX, worldZ) {
+        // Преобразование мировых координат в координаты радара
+        let dx = worldX - localPlayer.x;
+        let dz = worldZ - localPlayer.z;
+        let distance = Math.sqrt(dx*dx + dz*dz);
+        let maxDistance = 800; // Максимальная дальность отображения
+        
+        if (distance > maxDistance) return null;
+        
+        let scale = center / maxDistance;
+        let radarX = center + dx * scale;
+        let radarZ = center + dz * scale;
+        
+        return {x: radarX, z: radarZ};
     }
-    ctx.beginPath();
-    ctx.arc(400,400,9,0,2*Math.PI);
-    ctx.fillStyle='#0f0';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(400,382);
-    ctx.lineTo(394,394);
-    ctx.lineTo(406,394);
-    ctx.fillStyle='#0f0';
-    ctx.fill();
-    requestAnimationFrame(draw);
-}
-document.getElementById('activateBtn').onclick=async()=>{
-    let link=document.getElementById('lobbyLink').value.trim();
-    if(!link){alert('Введите ссылку');return;}
-    let statusDiv=document.getElementById('status');
-    statusDiv.innerHTML='Отправка...';
-    try{
-        let resp=await fetch('/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lobby_link:link})});
-        let data=await resp.json();
-        if(data.status==='ok'){
-            statusDiv.innerHTML=data.message;
-            if(!ws||ws.readyState!==WebSocket.OPEN)connectWS();
-        }else{
-            statusDiv.innerHTML='Ошибка: '+data.message;
+    
+    function drawRadar() {
+        // Очистка
+        ctx.fillStyle = '#0f1422';
+        ctx.fillRect(0, 0, size, size);
+        
+        // Рисуем концентрические круги
+        ctx.strokeStyle = '#2a3f5e';
+        ctx.lineWidth = 1;
+        for (let i = 1; i <= 3; i++) {
+            ctx.beginPath();
+            ctx.arc(center, center, (size/2) * (i/3), 0, Math.PI * 2);
+            ctx.stroke();
         }
-    }catch(e){
-        statusDiv.innerHTML='Ошибка соединения';
+        
+        // Рисуем линии направления
+        ctx.beginPath();
+        ctx.moveTo(center, 0);
+        ctx.lineTo(center, size);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, center);
+        ctx.lineTo(size, center);
+        ctx.stroke();
+        
+        // Рисуем игроков
+        for (let player of players) {
+            if (!player.alive) continue;
+            
+            let pos = worldToRadar(player.x, player.z);
+            if (!pos) continue;
+            
+            // Цвет в зависимости от команды
+            let color;
+            if (player.team === 1) color = '#ff4444'; // Террористы
+            else if (player.team === 2) color = '#4444ff'; // Спецназ
+            else color = '#ffffff';
+            
+            // Размер зависит от здоровья
+            let size = 6 + (player.health / 100) * 4;
+            
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.z, size, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Отображаем здоровье
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '10px Arial';
+            ctx.fillText(player.health + '%', pos.x - 10, pos.z - 5);
+        }
+        
+        // Рисуем центральную точку (локальный игрок)
+        ctx.beginPath();
+        ctx.arc(center, center, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#44ff44';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+        
+        // Рисуем направление взгляда (треугольник вверх)
+        ctx.beginPath();
+        ctx.moveTo(center, center - 15);
+        ctx.lineTo(center - 5, center - 5);
+        ctx.lineTo(center + 5, center - 5);
+        ctx.fillStyle = '#44ff44';
+        ctx.fill();
+        
+        document.getElementById('playerCount').innerText = `Игроков на радаре: ${players.length}`;
     }
-};
-draw();
+    
+    // Анимация
+    function animate() {
+        drawRadar();
+        requestAnimationFrame(animate);
+    }
+    
+    // Активация радара
+    document.getElementById('activateBtn').addEventListener('click', function() {
+        let link = document.getElementById('lobbyLink').value.trim();
+        if (link) {
+            alert('Ссылка получена: ' + link + '\nРадар активирован! (Демо-режим)');
+        } else {
+            alert('Пожалуйста, вставьте ссылку лобби');
+        }
+        radarActive = true;
+    });
+    
+    // Тестовые данные для демонстрации
+    document.getElementById('testBtn').addEventListener('click', function() {
+        // Генерируем случайных игроков для демонстрации
+        players = [];
+        let teams = [1, 1, 2, 2, 1, 2];
+        for (let i = 0; i < 12; i++) {
+            players.push({
+                x: (Math.random() - 0.5) * 600,
+                z: (Math.random() - 0.5) * 600,
+                team: teams[i % teams.length],
+                health: Math.floor(Math.random() * 100) + 1,
+                alive: true
+            });
+        }
+        // Локальный игрок в центре
+        localPlayer = {x: 0, z: 0};
+        alert('Тестовые данные загружены!');
+    });
+    
+    animate();
 </script>
 </body>
 </html>
-'''
-
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        if self.path=='/':
-            self.send_response(200)
-            self.send_header('Content-type','text/html')
-            self.end_headers()
-            self.wfile.write(HTML_PAGE.encode())
-        else:
-            self.send_response(404)
-            self.end_headers()
-    def do_POST(self):
-        global radar_active
-        if self.path=='/activate':
-            length=int(self.headers['Content-Length'])
-            data=json.loads(self.rfile.read(length).decode())
-            link=data.get('lobby_link','')
-            ok,msg=open_lobby_link(link)
-            if not ok:
-                self.send_response(500)
-                self.end_headers()
-                self.wfile.write(json.dumps({'status':'error','message':msg}).encode())
-                return
-            if not radar_active:
-                ok2,msg2=reader.connect()
-                if ok2:
-                    radar_active=True
-                    self.send_response(200)
-                    self.end_headers()
-                    self.wfile.write(json.dumps({'status':'ok','message':'Радар активирован. Входите в матч.'}).encode())
-                else:
-                    self.send_response(500)
-                    self.end_headers()
-                    self.wfile.write(json.dumps({'status':'error','message':msg2}).encode())
-            else:
-                self.send_response(200)
-                self.end_headers()
-                self.wfile.write(json.dumps({'status':'ok','message':'Радар уже активен'}).encode())
-        else:
-            self.send_response(404)
-            self.end_headers()
-    def log_message(self, fmt, *args): pass
-
-def run_web():
-    HTTPServer(('0.0.0.0', WEB_PORT), Handler).serve_forever()
-
-async def ws_handler(ws, path):
-    clients.add(ws)
-    try: await ws.wait_closed()
-    finally: clients.remove(ws)
-
-async def broadcast():
-    while True:
-        if radar_active:
-            players=reader.get_players()
-            if players:
-                local={'x':players[0]['x'],'z':players[0]['z']}
-                msg=json.dumps({'players':players,'local':local})
-                if clients:
-                    await asyncio.gather(*[c.send(msg) for c in clients])
-            elif clients:
-                await asyncio.gather(*[c.send(json.dumps({'players':[],'local':None})) for c in clients])
-        await asyncio.sleep(UPDATE_MS/1000)
-
-async def run_ws():
-    async with websockets.serve(ws_handler, '0.0.0.0', WS_PORT):
-        await broadcast()
-
-if __name__=='__main__':
-    print("\n=== STANDOFF 2 RADAR ===\n")
-    print("1. Запустите эмулятор и игру")
-    print("2. Откройте браузер и перейдите по адресу: http://localhost:8080")
-    print("3. Вставьте ссылку лобби и нажмите кнопку")
-    print("\nЕсли радар не работает, запустите скрипт от администратора.\n")
-    web_thread=threading.Thread(target=run_web, daemon=True)
-    web_thread.start()
-    loop=asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(run_ws())
-    except KeyboardInterrupt:
-        reader.close()
