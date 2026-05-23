@@ -1,214 +1,81 @@
+import requests
+import time
+import random
+import json
+from concurrent.futures import ThreadPoolExecutor
+from fake_useragent import UserAgent
 
-import sys
-import pymem
-import pymem.process
-import ctypes
-import math
-from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtCore import QTimer, Qt, QPoint
-from PyQt5.QtGui import QPainter, QPen, QColor, QFont, QBrush
+# Конфигурация
+PROXIES = [
+    "http://user:pass@ip1:port",
+    "http://user:pass@ip2:port",
+]
+TOKENS = ["EAAG...", "EAAD..."]  # Access-токены Facebook/Instagram
+TARGET_ID = "123456789"  # ID целевого аккаунта или поста
+REPORT_ENDPOINT = "https://graph.facebook.com/v18.0/{}/reports"
+REASON_CODE = 1  # 1=спам, 2=насилие, 3=ненависть, 4=фейк
 
-# ========== КОНФИГУРАЦИЯ ==========
-WINDOW_TITLE = "Counter-Strike 2"  # Точное название окна игры
-OFFSETS = {
-    "dwEntityList": 0x19B72B8,       # Указатель на список сущностей
-    "dwLocalPlayerPawn": 0x18B9188,  # Указатель на локального игрока
-    "dwViewMatrix": 0x19B7670,       # Матрица вида для WorldToScreen
-    # Смещения внутри структуры игрока
-    "m_iTeamNum": 0x3E3,
-    "m_iHealth": 0x344,
-    "m_vOldOrigin": 0x1324,          # Позиция в мире (Vector3)
-    "m_vecViewOffset": 0x340,        # Смещение камеры
-    "m_bDormant": 0xEC,
-    "m_szLastPlaceName": 0x1900,     # Не используется
-    "m_iszPlayerName": 0x620,        # Имя игрока
-}
-SCREEN_WIDTH = 1920   # Ваше разрешение экрана
-SCREEN_HEIGHT = 1080
-OVERLAY_OPACITY = 0.7  # Прозрачность оверлея
+ua = UserAgent()
 
-# ========== ЧТЕНИЕ ПАМЯТИ ==========
-class MemReader:
-    def __init__(self):
-        self.pm = None
-        self.client = None
-        self.base = 0
+def send_report(token, proxy, target_id):
+    """Отправка одной жалобы"""
+    headers = {
+        "User-Agent": ua.random,
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "reason": REASON_CODE,
+        "type": "USER" if target_id.isdigit() else "MEDIA",
+        "target_id": target_id,
+        "note": "Автоматическая жалоба: массовый спам и нарушение правил",
+    }
+    proxy_dict = {"http": proxy, "https": proxy} if proxy else None
+    try:
+        url = REPORT_ENDPOINT.format(target_id)
+        resp = requests.post(url, json=payload, headers=headers, proxies=proxy_dict, timeout=15)
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get("success"):
+                return f"OK: report_id={data.get('report_id')}"
+            else:
+                return f"FAIL: {data.get('error', {}).get('message')}"
+        else:
+            return f"HTTP {resp.status_code}: {resp.text[:100]}"
+    except Exception as e:
+        return f"EXCEPTION: {str(e)}"
 
-    def connect(self):
-        try:
-            self.pm = pymem.Pymem("cs2.exe")
-            self.client = pymem.process.module_from_name(self.pm.process_handle, "client.dll")
-            self.base = self.client.lpBaseOfDll
-            return True
-        except Exception as e:
-            print(f"Ошибка подключения: {e}")
-            return False
+def worker(token_proxy):
+    """Воркер для потока"""
+    token, proxy = token_proxy
+    delay = random.uniform(30, 90)
+    time.sleep(delay)
+    result = send_report(token, proxy, TARGET_ID)
+    return result
 
-    def read_int(self, address):
-        return self.pm.read_int(address)
-
-    def read_float(self, address):
-        return self.pm.read_float(address)
-
-    def read_vec3(self, address):
-        x = self.pm.read_float(address)
-        y = self.pm.read_float(address + 4)
-        z = self.pm.read_float(address + 8)
-        return (x, y, z)
-
-    def read_string(self, address, max_len=64):
-        try:
-            raw = self.pm.read_bytes(address, max_len)
-            return raw.decode('utf-8', errors='ignore').split('\x00')[0]
-        except:
-            return ""
-
-    def get_local_player(self):
-        local_pawn_ptr = self.read_int(self.base + OFFSETS["dwLocalPlayerPawn"])
-        return local_pawn_ptr
-
-    def get_entity_list(self):
-        entity_list = self.read_int(self.base + OFFSETS["dwEntityList"])
-        return entity_list
-
-    def get_view_matrix(self):
-        matrix_addr = self.base + OFFSETS["dwViewMatrix"]
-        matrix = []
-        for i in range(16):
-            matrix.append(self.read_float(matrix_addr + i * 4))
-        return matrix
-
-    def get_player_info(self, entity_pawn, local_team):
-        # Проверка на живучесть
-        health = self.read_int(entity_pawn + OFFSETS["m_iHealth"])
-        if health <= 0:
-            return None
-        # Команда
-        team = self.read_int(entity_pawn + OFFSETS["m_iTeamNum"])
-        if team == local_team:
-            return None  # Не рисуем союзников
-        # Имя
-        name_addr = self.read_int(entity_pawn + OFFSETS["m_iszPlayerName"])
-        name = self.read_string(name_addr) if name_addr else "Unknown"
-        # Позиция
-        pos = self.read_vec3(entity_pawn + OFFSETS["m_vOldOrigin"])
-        # Dormant (за стенами) – пропускаем
-        dormant = self.read_int(entity_pawn + OFFSETS["m_bDormant"])
-        if dormant:
-            return None
-        return {
-            "health": health,
-            "team": team,
-            "name": name,
-            "pos": pos,
-        }
-
-# ========== МАТЕМАТИКА WorldToScreen ==========
-def world_to_screen(world_pos, view_matrix, screen_w, screen_h):
-    x, y, z = world_pos
-    w = view_matrix[12] * x + view_matrix[13] * y + view_matrix[14] * z + view_matrix[15]
-    if w < 0.01:
-        return None
-    inv_w = 1.0 / w
-    sx = (view_matrix[0] * x + view_matrix[1] * y + view_matrix[2] * z + view_matrix[3]) * inv_w
-    sy = (view_matrix[4] * x + view_matrix[5] * y + view_matrix[6] * z + view_matrix[7]) * inv_w
-    out_x = (screen_w / 2) * (1.0 + sx)
-    out_y = (screen_h / 2) * (1.0 - sy)
-    if 0 <= out_x <= screen_w and 0 <= out_y <= screen_h:
-        return (int(out_x), int(out_y))
-    return None
-
-# ========== ОВЕРЛЕЙ НА PyQt5 ==========
-class Overlay(QWidget):
-    def __init__(self, reader):
-        super().__init__()
-        self.reader = reader
-        self.enemies = []  # Список врагов: (экранные координаты, здоровье, имя)
-        self.initUI()
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_data)
-        self.timer.start(33)  # ~30 FPS
-
-    def initUI(self):
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setGeometry(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.setStyleSheet("background: transparent;")
-        self.show()
-
-    def update_data(self):
-        # Обновляем список врагов
-        if not self.reader.pm:
-            return
-        try:
-            local_pawn = self.reader.get_local_player()
-            if not local_pawn:
-                return
-            local_team = self.reader.read_int(local_pawn + OFFSETS["m_iTeamNum"])
-            entity_list = self.reader.get_entity_list()
-            # Список сущностей: каждая сущность — 0x10 байт, указатель на pawn
-            new_enemies = []
-            for i in range(1, 64):  # CS2 максимум 64 игрока
-                entity_entry = self.reader.read_int(entity_list + i * 0x10)
-                if not entity_entry:
-                    continue
-                pawn = self.reader.read_int(entity_entry + 0x10)  # Смещение до pawn
-                if not pawn or pawn == local_pawn:
-                    continue
-                info = self.reader.get_player_info(pawn, local_team)
-                if info is None:
-                    continue
-                view_matrix = self.reader.get_view_matrix()
-                screen_pos = world_to_screen(info["pos"], view_matrix, SCREEN_WIDTH, SCREEN_HEIGHT)
-                if screen_pos:
-                    new_enemies.append((screen_pos, info["health"], info["name"]))
-            self.enemies = new_enemies
-        except Exception as e:
-            # Игнорируем ошибки чтения памяти (игра может быть закрыта)
-            pass
-        self.update()  # Перерисовка
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        # Рисуем каждого врага
-        for screen_pos, health, name in self.enemies:
-            x, y = screen_pos
-            # Прямоугольник ESP (ширина 60, высота 100)
-            w, h = 60, 100
-            left = x - w//2
-            top = y - h
-            # Цвет прямоугольника зависит от здоровья
-            r = int(255 * (1 - health/100))
-            g = int(255 * (health/100))
-            b = 0
-            color = QColor(r, g, b)
-            pen = QPen(color, 2)
-            painter.setPen(pen)
-            painter.setBrush(QBrush(QColor(0,0,0,0)))
-            painter.drawRect(left, top, w, h)
-            # Полоска здоровья
-            health_width = int(w * (health/100))
-            painter.fillRect(left, top - 8, health_width, 4, QColor(r, g, b))
-            # Имя игрока
-            font = QFont("Arial", 10)
-            painter.setFont(font)
-            painter.setPen(QColor(255,255,255))
-            painter.drawText(left, top - 10, name)
-            # Текст здоровья
-            painter.drawText(left + w - 20, top + h - 5, f"{health} HP")
-        painter.end()
-
-# ========== ЗАПУСК ==========
 def main():
-    app = QApplication(sys.argv)
-    reader = MemReader()
-    if not reader.connect():
-        print("Не удалось подключиться к CS2. Запустите игру и этот скрипт от администратора.")
-        sys.exit(1)
-    print("ESP активен. Закройте окно оверлея для выхода.")
-    overlay = Overlay(reader)
-    sys.exit(app.exec_())
+    """Запуск массовой отправки жалоб"""
+    if len(TOKENS) != len(PROXIES):
+        print("Ошибка: количество токенов и прокси должно совпадать")
+        return
+    
+    token_proxy_pairs = list(zip(TOKENS, PROXIES))
+    results = []
+    with ThreadPoolExecutor(max_workers=min(10, len(token_proxy_pairs))) as executor:
+        futures = [executor.submit(worker, pair) for pair in token_proxy_pairs]
+        for f in futures:
+            results.append(f.result())
+    
+    # Сохраняем лог
+    with open("report_log.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "timestamp": time.time(),
+            "target": TARGET_ID,
+            "results": results
+        }, f, indent=2)
+    
+    print(f"Отправлено жалоб: {len(results)}")
+    print(f"Успешно: {sum(1 for r in results if r.startswith('OK'))}")
 
 if __name__ == "__main__":
     main()
